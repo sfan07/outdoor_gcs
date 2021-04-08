@@ -93,7 +93,7 @@ bool QNode::init() {
 }
 
 void QNode::run() {
-	ros::Rate loop_rate(10); // change update rate here
+	ros::Rate loop_rate(freq); // change update rate here
 
 	while ( ros::ok() ) {
 
@@ -402,6 +402,23 @@ void QNode::Set_GPS_Home_uavs(int host_ind, int origin_ind){
 // 	// Set_Mode_uavs("OFFBOARD", ind);
 // }
 
+void QNode::Set_Square_Circle(int host_ind, float input[2]){
+	path_i = 0;
+	sc_size = input[0]; // length of square or diameter of circle
+	sc_time = input[1]; // time to finish one cycle
+	centers[host_ind][0] = UAVs_info[host_ind].pos_des[0];
+	centers[host_ind][1] = UAVs_info[host_ind].pos_des[1];
+	centers[host_ind][2] = UAVs_info[host_ind].pos_des[2];
+	sq_corners[host_ind][0][0] = sc_size/2+centers[host_ind][0];
+	sq_corners[host_ind][0][1] = sc_size/2+centers[host_ind][1];
+	sq_corners[host_ind][1][0] = -sc_size/2+centers[host_ind][0];
+	sq_corners[host_ind][1][1] = sc_size/2+centers[host_ind][1];
+	sq_corners[host_ind][2][0] = -sc_size/2+centers[host_ind][0];
+	sq_corners[host_ind][2][1] = -sc_size/2+centers[host_ind][1];
+	sq_corners[host_ind][3][0] = sc_size/2+centers[host_ind][0];
+	sq_corners[host_ind][3][1] = -sc_size/2+centers[host_ind][1];
+}
+
 void QNode::move_uavs(int ID, float pos_input[3]) {
     // commandFlag[ID] = true;
 	pub_move_flag[ID] = true;
@@ -432,11 +449,11 @@ void QNode::UAVS_Do_Plan(){
 		if (!Move[host_ind]){ continue; }
 		else{
 			if (Plan_Dim == 0){
-				float pos_input[3];
-				pos_input[0] = UAVs_info[host_ind].pos_des[0];
-				pos_input[1] = UAVs_info[host_ind].pos_des[1];
-				pos_input[2] = UAVs_info[host_ind].pos_des[2];
-				move_uavs(host_ind, pos_input);
+				// float pos_input[3];
+				// pos_input[0] = UAVs_info[host_ind].pos_des[0];
+				// pos_input[1] = UAVs_info[host_ind].pos_des[1];
+				// pos_input[2] = UAVs_info[host_ind].pos_des[2];
+				move_uavs(host_ind, UAVs_info[host_ind].pos_des);//pos_input
 			}
 			else if (Plan_Dim == 2){
 				float force[2];
@@ -481,24 +498,69 @@ void QNode::UAVS_Do_Plan(){
 				pos_input[2] = (UAVs_info[host_ind].pos_des[2] + (UAVs_info[host_ind].vel_cur[2] + force[2]*dt)*dt);
 				move_uavs(host_ind, pos_input);
 			}
-			else if (Plan_Dim == 10){
-				float pos_input[3];
-				// pos_input[0], UAVs_info[host_ind].pos_des[0] = square_x[square_i], square_x[square_i];
-				// pos_input[1], UAVs_info[host_ind].pos_des[1] = square_y[square_i], square_y[square_i];
-				// pos_input[2], UAVs_info[host_ind].pos_des[2] = 2.5, 2.5;
-				pos_input[0] = square_x[square_i];
-				pos_input[1] = square_y[square_i];
-				pos_input[2] = 2.5;
-				move_uavs(host_ind, pos_input);
-				if (ros::Time::now() - last_change >= ros::Duration(5.0)){
-					square_i += 1;
-					if (square_i == 8){
-						square_i = 0;
+			else if (Plan_Dim == 10){ //Square path
+
+				// Setting based on given time
+				int turn = std::floor(path_i/(sc_time*freq/4.0)); // (sc_time*freq)/4 amount of i for one side
+				UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][turn][0]+(sq_corners[host_ind][turn+1][0] - sq_corners[host_ind][turn][0])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
+				UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][turn][1]+(sq_corners[host_ind][turn+1][1] - sq_corners[host_ind][turn][1])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
+				UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+
+				float dist[3];
+				dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+				dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+				dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+				if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+					start_path = true;
+				}
+				if (start_path){
+					path_i += 1;
+					if (path_i >= sc_time*freq){
+						path_i = 0;
 					}
-					UAVs_info[host_ind].pos_des[0] = square_x[square_i];
-					UAVs_info[host_ind].pos_des[1] = square_y[square_i];
-					UAVs_info[host_ind].pos_des[2] = 2.5;
-					last_change = ros::Time::now();
+				}
+
+				// // Setting based on the location
+				// UAVs_info[host_ind].pos_des[0] = sq_corners[path_i][0];
+				// UAVs_info[host_ind].pos_des[1] = sq_corners[path_i][1];
+				// UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+				// move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+
+				// float dist[3];
+				// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+				// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+				// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+				// if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+				// 	//ros::Time::now() - last_change >= ros::Duration(5.0)){
+				// 	path_i += 1;
+				// 	if (path_i == 4){
+				// 		path_i = 0;
+				// 	}
+				// 	// last_change = ros::Time::now();
+				// }
+			}
+			else if (Plan_Dim == 11){ // circle path
+
+				float theta;
+				theta = 2*M_PI*path_i/(sc_time*freq);
+				UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
+				UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
+				UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+
+				float dist[3];
+				dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+				dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+				dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+				if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+					start_path = true;
+				}
+				if (start_path){
+					path_i += 1;
+					if (path_i >= sc_time*freq){
+						path_i = 0;
+					}
 				}
 			}
 		}
@@ -533,7 +595,9 @@ void QNode::Update_Move(int i, bool move){
 	UAVs_info[i].move = move;
 }
 void QNode::Update_Planning_Dim(int i){
-	Plan_Dim = i; // 0 for no planning, 2 for 2D, 3 for 3D
+	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
+	Plan_Dim = i; 
+	start_path = false;
 }
 
 State QNode::GetState_uavs(int ind){

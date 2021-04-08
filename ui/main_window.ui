@@ -1882,7 +1882,7 @@
           <x>250</x>
           <y>450</y>
           <width>251</width>
-          <height>111</height>
+          <height>191</height>
          </rect>
         </property>
         <property name="title">
@@ -1950,18 +1950,70 @@
           </property>
          </widget>
         </widget>
-        <widget class="QCheckBox" name="checkBox_square">
+        <widget class="QWidget" name="widget_2" native="true">
          <property name="geometry">
           <rect>
-           <x>10</x>
+           <x>0</x>
            <y>90</y>
-           <width>81</width>
-           <height>16</height>
+           <width>251</width>
+           <height>31</height>
           </rect>
          </property>
-         <property name="text">
-          <string>Square</string>
-         </property>
+         <widget class="QLineEdit" name="size_input">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>51</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>4</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="checkBox_circle">
+          <property name="geometry">
+           <rect>
+            <x>120</x>
+            <y>10</y>
+            <width>61</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Circle</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="checkBox_square">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>10</y>
+            <width>81</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Square</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="time_input">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>0</y>
+            <width>51</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="inputMask">
+           <string/>
+          </property>
+          <property name="text">
+           <string>60</string>
+          </property>
+         </widget>
         </widget>
        </widget>
       </widget>

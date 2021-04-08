@@ -29,6 +29,7 @@
 
 #include <string>
 #include <cmath>
+#include <math.h>
 // #include <unistd.h>
 // #include <Eigen/Eigen>
 #include <QThread>
@@ -180,6 +181,7 @@ public:
 	void Set_Arm_uavs(bool arm_disarm, int ind);
 	void Set_Mode_uavs(std::string command_mode, int ind);
 	void Set_GPS_Home_uavs(int host_ind, int origin_ind);
+	void Set_Square_Circle(int host_ind, float input[2]);
 	void move_uavs(int ind, float pos_input[3]);
 	void UAVS_Do_Plan();
 
@@ -206,6 +208,7 @@ Q_SIGNALS:
 private:
 	int init_argc;
 	char** init_argv;
+	int freq = 4;
 
 	////////////////////// Single uav ////////////////////////////
 	mavros_msgs::State uav_state;
@@ -251,9 +254,16 @@ private:
 
 	////////////////////// Multi-uav ////////////////////////////
 	ros::Time last_change;
+	float sc_size;
+	float sc_time;
+	float sq_corners[5][4][2];
 	float square_x[8] = {2, 2, 2, 0, -2, -2, -2, 0}; 
 	float square_y[8] = {2, 0, -2, -2, -2, 0, 2, 2};
-	int square_i = 0;
+	int path_i = 0;
+	// int square_i = 0;
+	// int circle_i = 0;
+	float centers[5][3];
+	bool start_path = false;
 
 	int DroneNumber = 5;
 	outdoor_gcs::uav_info UAVs_info[5];
@@ -262,7 +272,7 @@ private:
 	bool pub_move_flag[5];
 	bool pub_home_flag[5];
 	bool Move[5]; // default false
-	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D
+	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
 	float c1 = 7.0;
 	float c2 = 9.0;
 	float RepulsiveGradient = 7.5*std::pow(10,6);

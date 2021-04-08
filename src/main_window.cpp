@@ -844,14 +844,59 @@ void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
     }
 }
 void MainWindow::on_checkBox_square_stateChanged(int){
-    if (ui.checkBox_square -> isChecked()){
-        qnode.Update_Planning_Dim(10);
-        // ui.checkBox_Plan_2D -> setChecked(false);
-        // ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
-        // int item_index = ui.notice_logger->count()-1;
-        // ui.notice_logger->item(item_index)->setForeground(Qt::blue);
-    }else{
-        qnode.Update_Planning_Dim(0);
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+        for (const auto &i : avail_uavind){
+            if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                if (ui.checkBox_square -> isChecked()){
+                    float size_time[2];
+                    size_time[0] =  ui.size_input->text().toFloat();
+                    size_time[1] =  ui.time_input->text().toFloat();
+                    qnode.Set_Square_Circle(i, size_time);
+                    qnode.Update_Planning_Dim(10);
+                    ui.checkBox_circle -> setChecked(false);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Square path of uav " + QString::number(i+1) + " is set!");
+                    int item_index = ui.notice_logger->count()-1;
+                    ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+                }
+                else{
+                    qnode.Update_Planning_Dim(0);
+                }
+                break;
+            }
+        }
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to assign path!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_checkBox_circle_stateChanged(int){
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+        for (const auto &i : avail_uavind){
+            if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                if (ui.checkBox_circle -> isChecked()){
+                    float size_time[2];
+                    size_time[0] =  ui.size_input->text().toFloat();
+                    size_time[1] =  ui.time_input->text().toFloat();
+                    qnode.Set_Square_Circle(i, size_time);
+                    qnode.Update_Planning_Dim(11);
+                    ui.checkBox_square -> setChecked(false);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Circle path of uav " + QString::number(i+1) + " is set!");
+                    int item_index = ui.notice_logger->count()-1;
+                    ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+                }
+                else{
+                    qnode.Update_Planning_Dim(0);
+                }
+                break;
+            }
+        }
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to assign path!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
     }
 }
 void MainWindow::on_checkBox_imu_stateChanged(int){
