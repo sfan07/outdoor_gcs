@@ -331,9 +331,9 @@ void QNode::uavs_pub_command(){
 	for (const auto &ind : avail_uavind){
 		if (pub_home_flag[ind]){ // gps set origin
 			uavs_gps_home_pub[ind].publish(uavs_gps_home[ind]);
-			pub_move_flag[ind] = false;
+			pub_home_flag[ind] = false;
 		}
-		if (pub_home_flag[ind]){ // setpoint/local
+		if (pub_move_flag[ind]){
 			// uavs_setpoint_pub[ind].publish(uavs_setpoint[ind]);
         	uavs_move_pub[ind].publish(Command_List[ind]);
 			pub_move_flag[ind] = false;
