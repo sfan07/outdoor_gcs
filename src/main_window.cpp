@@ -849,12 +849,12 @@ void MainWindow::on_checkBox_square_stateChanged(int){
         for (const auto &i : avail_uavind){
             if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
                 if (ui.checkBox_square -> isChecked()){
+                    ui.checkBox_circle -> setChecked(false);
                     float size_time[2];
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
                     qnode.Update_Planning_Dim(10);
-                    ui.checkBox_circle -> setChecked(false);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Square path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
@@ -877,12 +877,12 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
         for (const auto &i : avail_uavind){
             if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
                 if (ui.checkBox_circle -> isChecked()){
+                    ui.checkBox_square -> setChecked(false);
                     float size_time[2];
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
                     qnode.Update_Planning_Dim(11);
-                    ui.checkBox_square -> setChecked(false);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Circle path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);

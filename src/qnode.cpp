@@ -417,6 +417,8 @@ void QNode::Set_Square_Circle(int host_ind, float input[2]){
 	sq_corners[host_ind][2][1] = -sc_size/2+centers[host_ind][1];
 	sq_corners[host_ind][3][0] = sc_size/2+centers[host_ind][0];
 	sq_corners[host_ind][3][1] = -sc_size/2+centers[host_ind][1];
+	sq_corners[host_ind][4][0] = sc_size/2+centers[host_ind][0]; // Extra corner for coding simplicity (to create a loop)
+	sq_corners[host_ind][4][1] = sc_size/2+centers[host_ind][1];
 }
 
 void QNode::move_uavs(int ID, float pos_input[3]) {
@@ -522,8 +524,8 @@ void QNode::UAVS_Do_Plan(){
 				}
 
 				// // Setting based on the location
-				// UAVs_info[host_ind].pos_des[0] = sq_corners[path_i][0];
-				// UAVs_info[host_ind].pos_des[1] = sq_corners[path_i][1];
+				// UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][path_i][0];
+				// UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][path_i][1];
 				// UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
 				// move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 
@@ -531,17 +533,18 @@ void QNode::UAVS_Do_Plan(){
 				// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
 				// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
 				// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-				// if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
-				// 	//ros::Time::now() - last_change >= ros::Duration(5.0)){
+				// // if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+				// if (ros::Time::now() - last_change >= ros::Duration(sc_time/4)){
 				// 	path_i += 1;
 				// 	if (path_i == 4){
 				// 		path_i = 0;
 				// 	}
-				// 	// last_change = ros::Time::now();
+				// 	last_change = ros::Time::now();
 				// }
 			}
 			else if (Plan_Dim == 11){ // circle path
 
+				// Setting based on given time
 				float theta;
 				theta = 2*M_PI*path_i/(sc_time*freq);
 				UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
@@ -562,6 +565,25 @@ void QNode::UAVS_Do_Plan(){
 						path_i = 0;
 					}
 				}
+
+				// // Setting based on the location (set 36 points! 1 per 10 degree.)
+				// float theta;
+				// theta = 2*M_PI*10*path_i/(sc_time*freq);
+				// UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
+				// UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
+				// UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+				// move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+
+				// float dist[3];
+				// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+				// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+				// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+				// if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+				// 	path_i += 1;
+				// 	if (path_i == 36){
+				// 		path_i = 0;
+				// 	}
+				// }
 			}
 		}
 	}	
@@ -598,6 +620,7 @@ void QNode::Update_Planning_Dim(int i){
 	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
 	Plan_Dim = i; 
 	start_path = false;
+	start_path = true;
 }
 
 State QNode::GetState_uavs(int ind){

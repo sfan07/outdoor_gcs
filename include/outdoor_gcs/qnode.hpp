@@ -256,7 +256,7 @@ private:
 	ros::Time last_change;
 	float sc_size;
 	float sc_time;
-	float sq_corners[5][4][2];
+	float sq_corners[5][5][2]; // 5 uavs, 4+1 conrners (extra one for coding simplicity purpose), 2D: xy
 	float square_x[8] = {2, 2, 2, 0, -2, -2, -2, 0}; 
 	float square_y[8] = {2, 0, -2, -2, -2, 0, 2, 2};
 	int path_i = 0;
