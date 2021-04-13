@@ -502,88 +502,81 @@ void QNode::UAVS_Do_Plan(){
 			}
 			else if (Plan_Dim == 10){ //Square path
 
-				// Setting based on given time
-				int turn = std::floor(path_i/(sc_time*freq/4.0)); // (sc_time*freq)/4 amount of i for one side
-				UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][turn][0]+(sq_corners[host_ind][turn+1][0] - sq_corners[host_ind][turn][0])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
-				UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][turn][1]+(sq_corners[host_ind][turn+1][1] - sq_corners[host_ind][turn][1])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
-				UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
-				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+				if (sc_time == 0){
+					// Setting based on the location
+					if (path_i >= 4){ path_i = 0; }
+					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][path_i][0];
+					UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][path_i][1];
+					UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+					move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 
-				float dist[3];
-				dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-				dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-				dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-				if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
-					start_path = true;
-				}
-				if (start_path){
-					path_i += 1;
-					if (path_i >= sc_time*freq){
-						path_i = 0;
+					float dist[3];
+					dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+					dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+					dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+					if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+					// if (ros::Time::now() - last_change >= ros::Duration(sc_time/4)){
+						path_i += 1;
+						// last_change = ros::Time::now();
+					}
+				} else{
+					// Setting based on given time
+					if (path_i >= sc_time*freq){ path_i = 0; }
+					int turn = std::floor(path_i/(sc_time*freq/4.0)); // (sc_time*freq)/4 amount of i for one side
+					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][turn][0]+(sq_corners[host_ind][turn+1][0] - sq_corners[host_ind][turn][0])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
+					UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][turn][1]+(sq_corners[host_ind][turn+1][1] - sq_corners[host_ind][turn][1])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
+					UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+					move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+
+					float dist[3];
+					dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+					dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+					dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+					if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+						start_path = true;
+					}
+					if (start_path){
+						path_i += 1;
 					}
 				}
-
-				// // Setting based on the location
-				// UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][path_i][0];
-				// UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][path_i][1];
-				// UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
-				// move_uavs(host_ind, UAVs_info[host_ind].pos_des);
-
-				// float dist[3];
-				// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-				// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-				// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-				// // if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
-				// if (ros::Time::now() - last_change >= ros::Duration(sc_time/4)){
-				// 	path_i += 1;
-				// 	if (path_i == 4){
-				// 		path_i = 0;
-				// 	}
-				// 	last_change = ros::Time::now();
-				// }
 			}
 			else if (Plan_Dim == 11){ // circle path
+				if (sc_time == 0){
+					// Setting based on the location (set 36 points! 1 per 10 degree.)
+					if (path_i == 36){ path_i = 0; }
+					float theta = 2*M_PI*10*path_i/(sc_time*freq);
+					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
+					UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
+					UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+					move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 
-				// Setting based on given time
-				float theta;
-				theta = 2*M_PI*path_i/(sc_time*freq);
-				UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
-				UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
-				UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
-				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
+					float dist[3];
+					dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+					dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+					dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+					if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+						path_i += 1;
+					}
+				} else{
+					// Setting based on given time
+					if (path_i >= sc_time*freq){ path_i = 0; }
+					float theta = 2*M_PI*path_i/(sc_time*freq);
+					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
+					UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
+					UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
+					move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 
-				float dist[3];
-				dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-				dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-				dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-				if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
-					start_path = true;
-				}
-				if (start_path){
-					path_i += 1;
-					if (path_i >= sc_time*freq){
-						path_i = 0;
+					float dist[3];
+					dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+					dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+					dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+					if (!start_path && sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+						start_path = true;
+					}
+					if (start_path){
+						path_i += 1;
 					}
 				}
-
-				// // Setting based on the location (set 36 points! 1 per 10 degree.)
-				// float theta;
-				// theta = 2*M_PI*10*path_i/(sc_time*freq);
-				// UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
-				// UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
-				// UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
-				// move_uavs(host_ind, UAVs_info[host_ind].pos_des);
-
-				// float dist[3];
-				// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-				// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-				// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-				// if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
-				// 	path_i += 1;
-				// 	if (path_i == 36){
-				// 		path_i = 0;
-				// 	}
-				// }
 			}
 		}
 	}	
