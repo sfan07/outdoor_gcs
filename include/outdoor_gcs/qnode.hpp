@@ -253,6 +253,14 @@ private:
 	void from_callback(const mavros_msgs::Mavlink::ConstPtr &msg);
 
 	////////////////////// Multi-uav ////////////////////////////
+	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
+	float c1 = 15.0; //7.0;
+	float c2 = 20.0; //9.0;
+	float RepulsiveGradient = 7.5*std::pow(10,6);
+	float r_alpha = 3.0;
+	float dt = 0.25;
+	float max_acc = 5.0;
+	float max_vel = 10.0;
 	ros::Time last_change;
 	float sc_size;
 	float sc_time;
@@ -272,12 +280,6 @@ private:
 	bool pub_move_flag[5];
 	bool pub_home_flag[5];
 	bool Move[5]; // default false
-	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
-	float c1 = 7.0;
-	float c2 = 9.0;
-	float RepulsiveGradient = 7.5*std::pow(10,6);
-	float r_alpha = 3.0;
-	float dt = 0.25;
 
 	outdoor_gcs::ControlCommand Command_List[3];
 	bool commandFlag[3];

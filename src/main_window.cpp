@@ -823,8 +823,8 @@ void MainWindow::on_InfoLogger_Clear_clicked(bool check){
 // CheckBox //
 void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
     if (ui.checkBox_Plan_2D -> isChecked()){
-        qnode.Update_Planning_Dim(2);
         ui.checkBox_Plan_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(2);
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);
@@ -834,8 +834,8 @@ void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
 }
 void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
     if (ui.checkBox_Plan_3D -> isChecked()){
-        qnode.Update_Planning_Dim(3);
         ui.checkBox_Plan_2D -> setChecked(false);
+        qnode.Update_Planning_Dim(3);
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);

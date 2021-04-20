@@ -451,11 +451,7 @@ void QNode::UAVS_Do_Plan(){
 		if (!Move[host_ind]){ continue; }
 		else{
 			if (Plan_Dim == 0){
-				// float pos_input[3];
-				// pos_input[0] = UAVs_info[host_ind].pos_des[0];
-				// pos_input[1] = UAVs_info[host_ind].pos_des[1];
-				// pos_input[2] = UAVs_info[host_ind].pos_des[2];
-				move_uavs(host_ind, UAVs_info[host_ind].pos_des);//pos_input
+				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 			}
 			else if (Plan_Dim == 2){
 				float force[2];
@@ -466,14 +462,19 @@ void QNode::UAVS_Do_Plan(){
 										UAVs_info[host_ind].pos_cur[1]-UAVs_info[other_ind].pos_cur[1]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2), 0.5);
 					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = -RepulsiveGradient*std::pow(dist - r_alpha, 2);
+						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 					}
 				}
 				float pos_input[3];
-				pos_input[0] = (UAVs_info[host_ind].pos_des[0] + (UAVs_info[host_ind].vel_cur[0] + force[0]*dt)*dt);
-				pos_input[1] = (UAVs_info[host_ind].pos_des[1] + (UAVs_info[host_ind].vel_cur[1] + force[1]*dt)*dt);
+				for (int i = 0; i < 2; i++) {
+					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					// std::cout << pos_input[i] << std::endl;
+					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
+				}
 				pos_input[2] = UAVs_info[host_ind].pos_des[2];
 				move_uavs(host_ind, pos_input);
 			}
@@ -488,16 +489,20 @@ void QNode::UAVS_Do_Plan(){
 										UAVs_info[host_ind].pos_cur[2]-UAVs_info[other_ind].pos_cur[2]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2) + std::pow(dist_v[2], 2), 0.5);
 					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = -RepulsiveGradient*std::pow(dist - r_alpha, 2);
+						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 						force[2] += ForceComponent*(dist_v[2]/dist);
 					}
 				}
 				float pos_input[3];
-				pos_input[0] = (UAVs_info[host_ind].pos_des[0] + (UAVs_info[host_ind].vel_cur[0] + force[0]*dt)*dt);
-				pos_input[1] = (UAVs_info[host_ind].pos_des[1] + (UAVs_info[host_ind].vel_cur[1] + force[1]*dt)*dt);
-				pos_input[2] = (UAVs_info[host_ind].pos_des[2] + (UAVs_info[host_ind].vel_cur[2] + force[2]*dt)*dt);
+				for (int i = 0; i < 3; i++) {
+					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					// std::cout << pos_input[i] << std::endl;
+					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
+				}
 				move_uavs(host_ind, pos_input);
 			}
 			else if (Plan_Dim == 10){ //Square path
