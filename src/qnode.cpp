@@ -467,16 +467,18 @@ void QNode::UAVS_Do_Plan(){
 						force[1] += ForceComponent*(dist_v[1]/dist);
 					}
 				}
-				float pos_input[3];
+				// float pos_input[3];
 				for (int i = 0; i < 2; i++) {
 					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
 					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
-					pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					// pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					// std::cout << pos_input[i] << std::endl;
 					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
 				}
-				pos_input[2] = UAVs_info[host_ind].pos_des[2];
-				move_uavs(host_ind, pos_input);
+				UAVs_info[host_ind].pos_nxt[2] = UAVs_info[host_ind].pos_des[2];
+				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
+				// move_uavs(host_ind, pos_input);
 			}
 			else if (Plan_Dim == 3){
 				float force[3];
@@ -495,15 +497,15 @@ void QNode::UAVS_Do_Plan(){
 						force[2] += ForceComponent*(dist_v[2]/dist);
 					}
 				}
-				float pos_input[3];
+				// float pos_input[3];
 				for (int i = 0; i < 3; i++) {
 					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
 					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
-					pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					// std::cout << pos_input[i] << std::endl;
 					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
 				}
-				move_uavs(host_ind, pos_input);
+				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
 			else if (Plan_Dim == 10){ //Square path
 
@@ -620,6 +622,37 @@ void QNode::Update_Planning_Dim(int i){
 	start_path = false;
 	// start_path = true;
 }
+void QNode::Update_Flock_Param(float param[6]){
+	if (param[0] != 0){	c1=param[0]; }
+	if (param[1] != 0){	c2=param[1]; }
+	if (param[2] != 0){	RepulsiveGradient=param[2]; }
+	if (param[3] != 0){	r_alpha=param[3]; }
+	if (param[4] != 0){	max_acc=param[4]; }
+	if (param[5] != 0){	max_vel=param[5]; }
+}
+void QNode::Update_Flock_Pos(int i, float pos_input[3], bool init_fin){ //True for init, false for final pos
+	if (init_fin){
+		UAVs_info[i].pos_ini[0] = pos_input[0];
+		UAVs_info[i].pos_ini[1] = pos_input[1];
+		UAVs_info[i].pos_ini[2] = pos_input[2];
+	} else {
+		UAVs_info[i].pos_fin[0] = pos_input[0];
+		UAVs_info[i].pos_fin[1] = pos_input[1];
+		UAVs_info[i].pos_fin[2] = pos_input[2];
+	}
+}
+void QNode::Update_Flock_Des(int i, bool init_fin){ //True for init, false for final pos
+	if (init_fin){
+		UAVs_info[i].pos_des[0] = UAVs_info[i].pos_ini[0];
+		UAVs_info[i].pos_des[1] = UAVs_info[i].pos_ini[1];
+		UAVs_info[i].pos_des[2] = UAVs_info[i].pos_ini[2];
+	} else {
+		UAVs_info[i].pos_des[0] = UAVs_info[i].pos_fin[0];
+		UAVs_info[i].pos_des[1] = UAVs_info[i].pos_fin[1];
+		UAVs_info[i].pos_des[2] = UAVs_info[i].pos_fin[2];
+	}
+}
+
 
 State QNode::GetState_uavs(int ind){
 	return uavs_state[ind];
@@ -642,6 +675,14 @@ outdoor_gcs::uav_info QNode::Get_UAV_info(int ind){
 }
 outdoor_gcs::Topic_for_log  QNode::GetLog_uavs(int ind){
 	return uavs_log[ind];
+}
+float QNode::GetFlockParam(int i){
+	if (i == 0){return c1;}
+	else if (i == 1){return c2;}
+	else if (i == 2){return RepulsiveGradient;}
+	else if (i == 3){return r_alpha;}
+	else if (i == 4){return max_acc;}
+	else if (i == 5){return max_vel;}
 }
 
 
