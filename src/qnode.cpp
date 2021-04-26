@@ -541,7 +541,7 @@ void QNode::UAVS_Do_Plan(){
 			else if (Plan_Dim == 11){ // circle path
 				if (sc_time == 0){ // Setting based on the location (set 36 points! 1 per 10 degree.)
 					if (path_i == 36){ path_i = 0; }
-					float theta = 2*M_PI*10*path_i/(sc_time*freq);
+					float theta = 2*M_PI*10*path_i/360;
 					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
 					UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
 					UAVs_info[host_ind].pos_des[2] = centers[host_ind][2];
@@ -609,7 +609,7 @@ void QNode::Update_Planning_Dim(int i){
 	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
 	Plan_Dim = i; 
 	start_path = false;
-	start_path = true;
+	// start_path = true;
 }
 
 State QNode::GetState_uavs(int ind){
