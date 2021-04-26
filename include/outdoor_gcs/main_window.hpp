@@ -12,7 +12,8 @@
 ** Includes
 *****************************************************************************/
 
-#include <QtGui/QMainWindow>
+//#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "ui_main_window.h"
 #include "qnode.hpp"
 
@@ -67,12 +68,11 @@ public Q_SLOTS:
 
 	////////////////////// Multi-uav ////////////////////////////
 	void on_Update_UAV_List_clicked(bool check);
-	void on_Button_Init_clicked(bool check);
 	void on_Set_GPS_Origin_clicked(bool check);
-	void on_Button_GetCur_All_clicked(bool check);
-	void on_Button_GetDes_All_clicked(bool check);
+	void on_Button_GetCur_Select_clicked(bool check);
+	void on_Button_GetDes_Select_clicked(bool check);
 	void on_Button_Set_All_Height_clicked(bool check);
-	void on_Button_Set_All_clicked(bool check);
+	void on_Button_Set_Select_clicked(bool check);
 	void on_ARM_ONE_clicked(bool check);
 	void on_DISARM_ONE_clicked(bool check);
 	void on_TAKEOFF_ONE_clicked(bool check);
@@ -86,17 +86,26 @@ public Q_SLOTS:
 	void on_DISARM_ALL_clicked(bool check);
 	void on_TAKEOFF_ALL_clicked(bool check);
 	void on_LAND_ALL_clicked(bool check);
+	void on_Button_Move_All_clicked(bool check);
+	void on_Button_Stop_All_clicked(bool check);
 	void on_MODE_RTL_ALL_clicked(bool check);
 	void on_MODE_LOITER_ALL_clicked(bool check);
 	void on_MODE_POSCTL_ALL_clicked(bool check);
 	void on_MODE_OFFBOARD_ALL_clicked(bool check);
-	void on_Button_Move_All_clicked(bool check);
-	void on_Button_Stop_All_clicked(bool check);
+	void on_Button_Flock_Param_clicked(bool check);
+	void on_Button_SetInit_clicked(bool check);
+	void on_Button_SetFin_clicked(bool check);
+	void on_Button_GoInit_clicked(bool check);
+	void on_Button_GoFin_clicked(bool check);
+	void on_Button_GoInit_ALL_clicked(bool check);
+	void on_Button_GoFin_ALL_clicked(bool check);
 	void on_InfoLogger_Clear_clicked(bool check);
+
+	void on_checkBox_square_stateChanged(int);
 	void on_checkBox_Plan_2D_stateChanged(int);
 	void on_checkBox_Plan_3D_stateChanged(int);
-	void on_checkBox_square_stateChanged(int);
 	void on_checkBox_circle_stateChanged(int);
+	void on_checkBox_Flock_Print_stateChanged(int);
 	void on_checkBox_imu_stateChanged(int);
 	void on_checkBox_mode_stateChanged(int);
 	void on_checkBox_gps_stateChanged(int);

@@ -103,8 +103,10 @@ namespace outdoor_gcs {
 		int id = 0;
 		float pos_cur[3] = {99};
 		float vel_cur[3] = {0};
-		float pos_ini[3] = {0};
 		float pos_des[3] = {0};
+		float pos_ini[3] = {0};
+		float pos_fin[3] = {0};
+		float pos_nxt[3] = {0};
 		bool rosReceived = false;
 		bool stateReceived = false;
 		bool imuReceived = false;
@@ -125,6 +127,7 @@ namespace outdoor_gcs {
 		bool print_gps = true;
 		bool print_local = true;
 		bool print_des = true;
+		bool print_flock = false;
 		bool clear_each_print = true;
 	};
 
@@ -188,7 +191,10 @@ public:
 	void Update_UAV_info(outdoor_gcs::uav_info UAV_input, int ind);
 	void Update_Avail_UAVind(std::list<int> avail_uavind_input);
 	void Update_Move(int i, bool move);
-	void Update_Planning_Dim(int i);
+	void Update_Planning_Dim(int host_ind, int i);
+	void Update_Flock_Param(float param[6]);
+	void Update_Flock_Pos(int i, float pos_input[3], bool init_fin);
+	void Update_Flock_Des(int i, bool init_fin);
 
 	State GetState_uavs(int ind);
 	Imu GetImu_uavs(int ind);
@@ -197,6 +203,7 @@ public:
 	mavros_msgs::Mavlink GetFrom_uavs(int ind);
 	outdoor_gcs::uav_info Get_UAV_info(int ind);
 	outdoor_gcs::Topic_for_log GetLog_uavs(int ind);
+	float GetFlockParam(int i);
 
 	QStringList lsAllTopics();
 	outdoor_gcs::Angles quaternion_to_euler(float quat[4]);
@@ -253,6 +260,14 @@ private:
 	void from_callback(const mavros_msgs::Mavlink::ConstPtr &msg);
 
 	////////////////////// Multi-uav ////////////////////////////
+	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
+	float c1 = 10.0; //7.0;
+	float c2 = 10.0; //9.0;
+	float RepulsiveGradient = 50; //7.5*std::pow(10,6);
+	float r_alpha = 3.0;
+	float max_acc = 10.0;
+	float max_vel = 10.0;
+	float dt = 0.25;
 	ros::Time last_change;
 	float sc_size;
 	float sc_time;
@@ -272,12 +287,6 @@ private:
 	bool pub_move_flag[5];
 	bool pub_home_flag[5];
 	bool Move[5]; // default false
-	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
-	float c1 = 7.0;
-	float c2 = 9.0;
-	float RepulsiveGradient = 7.5*std::pow(10,6);
-	float r_alpha = 3.0;
-	float dt = 0.25;
 
 	outdoor_gcs::ControlCommand Command_List[3];
 	bool commandFlag[3];

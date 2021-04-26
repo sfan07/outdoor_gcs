@@ -123,13 +123,11 @@ void MainWindow::on_Enable_Planning_clicked(bool check){
 void MainWindow::on_Button_Set_Pos_clicked(bool check){
     /* read values from line edit */
     float target_state[3];
-
     target_state[0] =  ui.x_input->text().toFloat();
     target_state[1] =  ui.y_input->text().toFloat();
     target_state[2] =  ui.z_input->text().toFloat();
     /*----------------determine whether the input is in safe range ------------------*/
     bool input_is_valid = true;
-
     if(target_state[0] < -10.0 || target_state[0] > 10.0) {
         input_is_valid = false;
     }
@@ -141,7 +139,6 @@ void MainWindow::on_Button_Set_Pos_clicked(bool check){
     }
 
     /*----------------send input ------------------*/
-
     if(input_is_valid){
         /*  update the ENU target label */
         ui.des_x->setText(QString::number(target_state[0], 'f', 2));
@@ -408,18 +405,6 @@ void MainWindow::on_Update_UAV_List_clicked(bool check){
     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Available uav list updated!");
 }
 
-void MainWindow::on_Button_Init_clicked(bool check){
-    for (const auto &i : avail_uavind){
-        UAVs[i].pos_ini[0] = UAVs[i].pos_cur[0];
-        UAVs[i].pos_ini[1] = UAVs[i].pos_cur[1];
-        UAVs[i].pos_ini[2] = 0.0;
-        qnode.Update_UAV_info(UAVs[i], i);
-    }
-    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Initial positions of all uav updated!");
-    int item_index = ui.notice_logger->count()-1;
-    ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
-}
-
 void MainWindow::on_Set_GPS_Origin_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
@@ -434,10 +419,6 @@ void MainWindow::on_Set_GPS_Origin_clicked(bool check){
         ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
         for (const auto &i : avail_uavind){
             qnode.Set_GPS_Home_uavs(i, origin_ind);
-            UAVs[i].pos_ini[0] = UAVs[i].pos_cur[0];
-            UAVs[i].pos_ini[1] = UAVs[i].pos_cur[1];
-            UAVs[i].pos_ini[2] = 0.0;
-            qnode.Update_UAV_info(UAVs[i], i);
         }
     } else{
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to set GPS origin!");
@@ -446,7 +427,7 @@ void MainWindow::on_Set_GPS_Origin_clicked(bool check){
     }
 }
 
-void MainWindow::on_Button_GetCur_All_clicked(bool check){
+void MainWindow::on_Button_GetCur_Select_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
@@ -467,7 +448,7 @@ void MainWindow::on_Button_GetCur_All_clicked(bool check){
     }
 }
 
-void MainWindow::on_Button_GetDes_All_clicked(bool check){
+void MainWindow::on_Button_GetDes_Select_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
@@ -490,7 +471,6 @@ void MainWindow::on_Button_GetDes_All_clicked(bool check){
 
 
 void MainWindow::on_Button_Set_All_Height_clicked(bool check){
-    /* read values from line edit */
     float target_height;
     target_height =  ui.z_input_all->text().toFloat();
 
@@ -503,16 +483,13 @@ void MainWindow::on_Button_Set_All_Height_clicked(bool check){
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
     } else {
-        // QMessageBox msgBox;
-        // msgBox.setText("Input position is out of range!!");
-        // msgBox.exec();
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : Input height is out of range!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::red);
     };
 }
 
-void MainWindow::on_Button_Set_All_clicked(bool check){
+void MainWindow::on_Button_Set_Select_clicked(bool check){
     /* read values from line edit */
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
@@ -523,21 +500,17 @@ void MainWindow::on_Button_Set_All_clicked(bool check){
         target_state[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-
         if(target_state[0] < -10.0 || target_state[0] > 10.0) {
             input_is_valid = false;
         }
-
         if(target_state[1] < -10.0 || target_state[1] > 10.0) {
             input_is_valid = false;
         }
-
         if(target_state[2] < -1.20 || target_state[2] > 30.0) {
             input_is_valid = false;
         }
 
         /*----------------send input ------------------*/
-
         if(input_is_valid){
             for (const auto &i : avail_uavind){
                 if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
@@ -552,9 +525,6 @@ void MainWindow::on_Button_Set_All_clicked(bool check){
                 }
             }
         } else {
-            // QMessageBox msgBox;
-            // msgBox.setText("Input position is out of range!!");
-            // msgBox.exec();
             ui.notice_logger->addItem(QTime::currentTime().toString() + " : Input location is out of range!");
             int item_index = ui.notice_logger->count()-1;
             ui.notice_logger->item(item_index)->setForeground(Qt::red);
@@ -816,33 +786,165 @@ void MainWindow::on_MODE_OFFBOARD_ALL_clicked(bool check){
     int item_index = ui.notice_logger->count()-1;
     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
 }
+void MainWindow::on_Button_Flock_Param_clicked(bool check){
+    float param[6];
+    param[0] = ui.c1_input->text().toFloat();
+    param[1] = ui.c2_input->text().toFloat();
+    param[2] = ui.rho_input->text().toFloat();
+    param[3] = ui.r_alpha_input->text().toFloat();
+    param[4] = ui.acc_input->text().toFloat();
+    param[5] = ui.vel_input->text().toFloat();
+    qnode.Update_Flock_Param(param);
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock params are updated!");
+    int item_index = ui.notice_logger->count()-1;
+    ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+}
+void MainWindow::on_Button_SetInit_clicked(bool check){
+    /* read values from line edit */
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+
+        float flock_pos[3];
+        flock_pos[0] =  ui.x_input_all->text().toFloat();
+        flock_pos[1] =  ui.y_input_all->text().toFloat();
+        flock_pos[2] =  ui.z_input_all->text().toFloat();
+        /*----------------determine whether the input is in safe range ------------------*/
+        bool input_is_valid = true;
+        if(flock_pos[0] < -10.0 || flock_pos[0] > 10.0) {
+            input_is_valid = false;
+        }
+        if(flock_pos[1] < -10.0 || flock_pos[1] > 10.0) {
+            input_is_valid = false;
+        }
+        if(flock_pos[2] < -1.20 || flock_pos[2] > 30.0) {
+            input_is_valid = false;
+        }
+
+        /*----------------send input ------------------*/
+        if(input_is_valid){
+            for (const auto &i : avail_uavind){
+                if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                    qnode.Update_Flock_Pos(i, flock_pos, true);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Init of uav " + QString::number(i+1) + " is set! ");
+                    int item_index = ui.notice_logger->count()-1;
+                    ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+                    break;
+                }
+            }
+        } else {
+            ui.notice_logger->addItem(QTime::currentTime().toString() + " : Input location is out of range!");
+            int item_index = ui.notice_logger->count()-1;
+            ui.notice_logger->item(item_index)->setForeground(Qt::red);
+        };
+
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to assign initial location!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_Button_SetFin_clicked(bool check){
+    /* read values from line edit */
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+
+        float flock_pos[3];
+        flock_pos[0] =  ui.x_input_all->text().toFloat();
+        flock_pos[1] =  ui.y_input_all->text().toFloat();
+        flock_pos[2] =  ui.z_input_all->text().toFloat();
+        /*----------------determine whether the input is in safe range ------------------*/
+        bool input_is_valid = true;
+        if(flock_pos[0] < -10.0 || flock_pos[0] > 10.0) {
+            input_is_valid = false;
+        }
+        if(flock_pos[1] < -10.0 || flock_pos[1] > 10.0) {
+            input_is_valid = false;
+        }
+        if(flock_pos[2] < -1.20 || flock_pos[2] > 30.0) {
+            input_is_valid = false;
+        }
+
+        /*----------------send input ------------------*/
+        if(input_is_valid){
+            for (const auto &i : avail_uavind){
+                if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                    qnode.Update_Flock_Pos(i, flock_pos, false);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Fin of uav " + QString::number(i+1) + " is set! ");
+                    int item_index = ui.notice_logger->count()-1;
+                    ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+                    break;
+                }
+            }
+        } else {
+            ui.notice_logger->addItem(QTime::currentTime().toString() + " : Input location is out of range!");
+            int item_index = ui.notice_logger->count()-1;
+            ui.notice_logger->item(item_index)->setForeground(Qt::red);
+        };
+
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to assign final location!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_Button_GoInit_clicked(bool check){
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+        for (const auto &i : avail_uavind){
+            if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                qnode.Update_Flock_Des(i, true);
+                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Flock Init! ");
+                int item_index = ui.notice_logger->count()-1;
+                ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+                break;
+            }
+        }
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to GoInit!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_Button_GoFin_clicked(bool check){
+    if (ui.uav_detect_logger->selectedItems().count()!=0){
+        QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
+        for (const auto &i : avail_uavind){
+            if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
+                qnode.Update_Flock_Des(i, false);
+                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Flock Fin! ");
+                int item_index = ui.notice_logger->count()-1;
+                ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+                break;
+            }
+        }
+    } else{
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to GoInit!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_Button_GoInit_ALL_clicked(bool check){
+    for (const auto &i : avail_uavind){
+        qnode.Update_Flock_Des(i, true);
+    }
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Flock Init! ");
+    int item_index = ui.notice_logger->count()-1;
+    ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+}
+void MainWindow::on_Button_GoFin_ALL_clicked(bool check){
+    for (const auto &i : avail_uavind){
+        qnode.Update_Flock_Des(i, false);
+    }
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Flock Fin! ");
+    int item_index = ui.notice_logger->count()-1;
+    ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+}
+
 void MainWindow::on_InfoLogger_Clear_clicked(bool check){
     ui.info_logger->clear();
 }
 
 // CheckBox //
-void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
-    if (ui.checkBox_Plan_2D -> isChecked()){
-        qnode.Update_Planning_Dim(2);
-        ui.checkBox_Plan_3D -> setChecked(false);
-        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Planning Set!");
-        int item_index = ui.notice_logger->count()-1;
-        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
-    }else{
-        qnode.Update_Planning_Dim(0);
-    }
-}
-void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
-    if (ui.checkBox_Plan_3D -> isChecked()){
-        qnode.Update_Planning_Dim(3);
-        ui.checkBox_Plan_2D -> setChecked(false);
-        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
-        int item_index = ui.notice_logger->count()-1;
-        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
-    }else{
-        qnode.Update_Planning_Dim(0);
-    }
-}
 void MainWindow::on_checkBox_square_stateChanged(int){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
@@ -854,13 +956,13 @@ void MainWindow::on_checkBox_square_stateChanged(int){
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
-                    qnode.Update_Planning_Dim(10);
+                    qnode.Update_Planning_Dim(i, 10);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Square path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
                 }
                 else{
-                    qnode.Update_Planning_Dim(0);
+                    qnode.Update_Planning_Dim(i, 0);
                 }
                 break;
             }
@@ -882,13 +984,13 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
-                    qnode.Update_Planning_Dim(11);
+                    qnode.Update_Planning_Dim(i, 11);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Circle path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
                 }
                 else{
-                    qnode.Update_Planning_Dim(0);
+                    qnode.Update_Planning_Dim(i, 0);
                 }
                 break;
             }
@@ -897,6 +999,35 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to assign path!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
+void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
+    if (ui.checkBox_Plan_2D -> isChecked()){
+        ui.checkBox_Plan_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 2); // 99 as all agents
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Planning Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
+void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
+    if (ui.checkBox_Plan_3D -> isChecked()){
+        ui.checkBox_Plan_2D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 3);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
+void MainWindow::on_checkBox_Flock_Print_stateChanged(int){
+    if (ui.checkBox_Flock_Print -> isChecked()){
+        checkbox_stat.print_flock = true;
+    }else{
+        checkbox_stat.print_flock = false;
     }
 }
 void MainWindow::on_checkBox_imu_stateChanged(int){
@@ -980,6 +1111,14 @@ void MainWindow::updateInfoLogger(){
     int item_index = ui.info_logger->count()-1;
     ui.info_logger->item(item_index)->setForeground(Qt::white);
     ui.info_logger->item(item_index)->setBackground(Qt::black);
+    if (checkbox_stat.print_flock){
+        ui.info_logger->addItem("Flock Param: c1: " + QString::number(qnode.GetFlockParam(0), 'f', 1) +
+                                ". c2: " + QString::number(qnode.GetFlockParam(1), 'f', 1) + 
+                                ". rho: " + QString::number(qnode.GetFlockParam(2), 'f', 1));
+        ui.info_logger->addItem("             r_alpha: " + QString::number(qnode.GetFlockParam(3), 'f', 1) +
+                                ". a_max: " + QString::number(qnode.GetFlockParam(4), 'f', 1) +
+                                ". v_max: " + QString::number(qnode.GetFlockParam(5), 'f', 1));
+    }
 
     for (const auto &it : avail_uavind){
 
@@ -1060,6 +1199,17 @@ void MainWindow::updateInfoLogger(){
                 int item_index = ui.info_logger->count()-1;
                 ui.info_logger->item(item_index)->setForeground(Qt::darkGreen);
             }
+        }
+        if (checkbox_stat.print_flock){
+            ui.info_logger->addItem("Flock Init Position: X: " + QString::number(UAVs[it].pos_ini[0], 'f', 3) +
+                                    ". Y: " + QString::number(UAVs[it].pos_ini[1], 'f', 3) +
+                                    ". Z: " + QString::number(UAVs[it].pos_ini[2], 'f', 3));
+            ui.info_logger->addItem("Flock Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
+                                    ". Y: " + QString::number(UAVs[it].pos_nxt[1], 'f', 3) +
+                                    ". Z: " + QString::number(UAVs[it].pos_nxt[2], 'f', 3));
+            ui.info_logger->addItem("Flock Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+                                    ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) +
+                                    ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
         }
         ui.info_logger->addItem("----------------------------------------------------------------------------------------");
     }

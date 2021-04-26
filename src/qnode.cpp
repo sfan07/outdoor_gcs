@@ -450,14 +450,10 @@ void QNode::UAVS_Do_Plan(){
 	for (const auto &host_ind : avail_uavind){
 		if (!Move[host_ind]){ continue; }
 		else{
-			if (Plan_Dim == 0){
-				// float pos_input[3];
-				// pos_input[0] = UAVs_info[host_ind].pos_des[0];
-				// pos_input[1] = UAVs_info[host_ind].pos_des[1];
-				// pos_input[2] = UAVs_info[host_ind].pos_des[2];
-				move_uavs(host_ind, UAVs_info[host_ind].pos_des);//pos_input
+			if (Plan_Dim[host_ind] == 0){
+				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 			}
-			else if (Plan_Dim == 2){
+			else if (Plan_Dim[host_ind] == 2){
 				float force[2];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -466,18 +462,25 @@ void QNode::UAVS_Do_Plan(){
 										UAVs_info[host_ind].pos_cur[1]-UAVs_info[other_ind].pos_cur[1]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2), 0.5);
 					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = -RepulsiveGradient*std::pow(dist - r_alpha, 2);
+						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 					}
 				}
-				float pos_input[3];
-				pos_input[0] = (UAVs_info[host_ind].pos_des[0] + (UAVs_info[host_ind].vel_cur[0] + force[0]*dt)*dt);
-				pos_input[1] = (UAVs_info[host_ind].pos_des[1] + (UAVs_info[host_ind].vel_cur[1] + force[1]*dt)*dt);
-				pos_input[2] = UAVs_info[host_ind].pos_des[2];
-				move_uavs(host_ind, pos_input);
+				// float pos_input[3];
+				for (int i = 0; i < 2; i++) {
+					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					// pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					// std::cout << pos_input[i] << std::endl;
+					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
+				}
+				UAVs_info[host_ind].pos_nxt[2] = UAVs_info[host_ind].pos_des[2];
+				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
+				// move_uavs(host_ind, pos_input);
 			}
-			else if (Plan_Dim == 3){
+			else if (Plan_Dim[host_ind] == 3){
 				float force[3];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -488,21 +491,26 @@ void QNode::UAVS_Do_Plan(){
 										UAVs_info[host_ind].pos_cur[2]-UAVs_info[other_ind].pos_cur[2]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2) + std::pow(dist_v[2], 2), 0.5);
 					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = -RepulsiveGradient*std::pow(dist - r_alpha, 2);
+						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 						force[2] += ForceComponent*(dist_v[2]/dist);
 					}
 				}
-				float pos_input[3];
-				pos_input[0] = (UAVs_info[host_ind].pos_des[0] + (UAVs_info[host_ind].vel_cur[0] + force[0]*dt)*dt);
-				pos_input[1] = (UAVs_info[host_ind].pos_des[1] + (UAVs_info[host_ind].vel_cur[1] + force[1]*dt)*dt);
-				pos_input[2] = (UAVs_info[host_ind].pos_des[2] + (UAVs_info[host_ind].vel_cur[2] + force[2]*dt)*dt);
-				move_uavs(host_ind, pos_input);
+				// float pos_input[3];
+				for (int i = 0; i < 3; i++) {
+					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
+					// std::cout << pos_input[i] << std::endl;
+					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
+				}
+				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
-			else if (Plan_Dim == 10){ //Square path
+			else if (Plan_Dim[host_ind] == 10){ //Square path
 
-				if (sc_time == 0){ // Setting based on the location
+				if (sc_time == 0){
+					// Setting based on the location
 					if (path_i >= 4){ path_i = 0; }
 					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][path_i][0];
 					UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][path_i][1];
@@ -518,7 +526,8 @@ void QNode::UAVS_Do_Plan(){
 						path_i += 1;
 						// last_change = ros::Time::now();
 					}
-				} else{	// Setting based on given time
+				} else{
+					// Setting based on given time
 					if (path_i >= sc_time*freq){ path_i = 0; }
 					int turn = std::floor(path_i/(sc_time*freq/4.0)); // (sc_time*freq)/4 amount of i for one side
 					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][turn][0]+(sq_corners[host_ind][turn+1][0] - sq_corners[host_ind][turn][0])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
@@ -538,9 +547,10 @@ void QNode::UAVS_Do_Plan(){
 					}
 				}
 			}
-			else if (Plan_Dim == 11){ // circle path
-				if (sc_time == 0){ // Setting based on the location (set 36 points! 1 per 10 degree.)
-					if (path_i == 36){ path_i = 0; }
+			else if (Plan_Dim[host_ind] == 11){ // circle path
+				if (sc_time == 0){
+					// Setting based on the location (set 36 points! 1 per 10 degree.)
+					if (path_i >= 36){ path_i = 0; }
 					float theta = 2*M_PI*10*path_i/360;
 					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
 					UAVs_info[host_ind].pos_des[1] = (sc_size/2)*sin(theta)+centers[host_ind][0];
@@ -554,7 +564,8 @@ void QNode::UAVS_Do_Plan(){
 					if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
 						path_i += 1;
 					}
-				} else{	// Setting based on given time
+				} else{
+					// Setting based on given time
 					if (path_i >= sc_time*freq){ path_i = 0; }
 					float theta = 2*M_PI*path_i/(sc_time*freq);
 					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
@@ -605,12 +616,48 @@ void QNode::Update_Move(int i, bool move){
 	Move[i] = move;
 	UAVs_info[i].move = move;
 }
-void QNode::Update_Planning_Dim(int i){
+void QNode::Update_Planning_Dim(int host_ind, int i){
 	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
-	Plan_Dim = i; 
+	if (host_ind==99){
+    	for (const auto &it : avail_uavind){
+			Plan_Dim[it] = i;
+		}
+	} else{ Plan_Dim[host_ind] = i;}
+	
 	start_path = false;
 	// start_path = true;
 }
+void QNode::Update_Flock_Param(float param[6]){
+	if (param[0] != 0){	c1=param[0]; }
+	if (param[1] != 0){	c2=param[1]; }
+	if (param[2] != 0){	RepulsiveGradient=param[2]; }
+	if (param[3] != 0){	r_alpha=param[3]; }
+	if (param[4] != 0){	max_acc=param[4]; }
+	if (param[5] != 0){	max_vel=param[5]; }
+}
+void QNode::Update_Flock_Pos(int i, float pos_input[3], bool init_fin){ //True for init, false for final pos
+	if (init_fin){
+		UAVs_info[i].pos_ini[0] = pos_input[0];
+		UAVs_info[i].pos_ini[1] = pos_input[1];
+		UAVs_info[i].pos_ini[2] = pos_input[2];
+	} else {
+		UAVs_info[i].pos_fin[0] = pos_input[0];
+		UAVs_info[i].pos_fin[1] = pos_input[1];
+		UAVs_info[i].pos_fin[2] = pos_input[2];
+	}
+}
+void QNode::Update_Flock_Des(int i, bool init_fin){ //True for init, false for final pos
+	if (init_fin){
+		UAVs_info[i].pos_des[0] = UAVs_info[i].pos_ini[0];
+		UAVs_info[i].pos_des[1] = UAVs_info[i].pos_ini[1];
+		UAVs_info[i].pos_des[2] = UAVs_info[i].pos_ini[2];
+	} else {
+		UAVs_info[i].pos_des[0] = UAVs_info[i].pos_fin[0];
+		UAVs_info[i].pos_des[1] = UAVs_info[i].pos_fin[1];
+		UAVs_info[i].pos_des[2] = UAVs_info[i].pos_fin[2];
+	}
+}
+
 
 State QNode::GetState_uavs(int ind){
 	return uavs_state[ind];
@@ -633,6 +680,14 @@ outdoor_gcs::uav_info QNode::Get_UAV_info(int ind){
 }
 outdoor_gcs::Topic_for_log  QNode::GetLog_uavs(int ind){
 	return uavs_log[ind];
+}
+float QNode::GetFlockParam(int i){
+	if (i == 0){return c1;}
+	else if (i == 1){return c2;}
+	else if (i == 2){return RepulsiveGradient;}
+	else if (i == 3){return r_alpha;}
+	else if (i == 4){return max_acc;}
+	else if (i == 5){return max_vel;}
 }
 
 
