@@ -450,10 +450,10 @@ void QNode::UAVS_Do_Plan(){
 	for (const auto &host_ind : avail_uavind){
 		if (!Move[host_ind]){ continue; }
 		else{
-			if (Plan_Dim == 0){
+			if (Plan_Dim[host_ind] == 0){
 				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 			}
-			else if (Plan_Dim == 2){
+			else if (Plan_Dim[host_ind] == 2){
 				float force[2];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -480,7 +480,7 @@ void QNode::UAVS_Do_Plan(){
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 				// move_uavs(host_ind, pos_input);
 			}
-			else if (Plan_Dim == 3){
+			else if (Plan_Dim[host_ind] == 3){
 				float force[3];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -507,7 +507,7 @@ void QNode::UAVS_Do_Plan(){
 				}
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
-			else if (Plan_Dim == 10){ //Square path
+			else if (Plan_Dim[host_ind] == 10){ //Square path
 
 				if (sc_time == 0){
 					// Setting based on the location
@@ -547,7 +547,7 @@ void QNode::UAVS_Do_Plan(){
 					}
 				}
 			}
-			else if (Plan_Dim == 11){ // circle path
+			else if (Plan_Dim[host_ind] == 11){ // circle path
 				if (sc_time == 0){
 					// Setting based on the location (set 36 points! 1 per 10 degree.)
 					if (path_i >= 36){ path_i = 0; }
@@ -616,9 +616,14 @@ void QNode::Update_Move(int i, bool move){
 	Move[i] = move;
 	UAVs_info[i].move = move;
 }
-void QNode::Update_Planning_Dim(int i){
+void QNode::Update_Planning_Dim(int host_ind, int i){
 	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
-	Plan_Dim = i; 
+	if (host_ind==99){
+    	for (const auto &it : avail_uavind){
+			Plan_Dim[it] = i;
+		}
+	} else{ Plan_Dim[host_ind] = i;}
+	
 	start_path = false;
 	// start_path = true;
 }

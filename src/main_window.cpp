@@ -405,18 +405,6 @@ void MainWindow::on_Update_UAV_List_clicked(bool check){
     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Available uav list updated!");
 }
 
-// void MainWindow::on_Button_Init_clicked(bool check){
-//     for (const auto &i : avail_uavind){
-//         UAVs[i].pos_ini[0] = UAVs[i].pos_cur[0];
-//         UAVs[i].pos_ini[1] = UAVs[i].pos_cur[1];
-//         UAVs[i].pos_ini[2] = 0.0;
-//         qnode.Update_UAV_info(UAVs[i], i);
-//     }
-//     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Initial positions of all uav updated!");
-//     int item_index = ui.notice_logger->count()-1;
-//     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
-// }
-
 void MainWindow::on_Set_GPS_Origin_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
@@ -431,10 +419,6 @@ void MainWindow::on_Set_GPS_Origin_clicked(bool check){
         ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
         for (const auto &i : avail_uavind){
             qnode.Set_GPS_Home_uavs(i, origin_ind);
-            UAVs[i].pos_ini[0] = UAVs[i].pos_cur[0];
-            UAVs[i].pos_ini[1] = UAVs[i].pos_cur[1];
-            UAVs[i].pos_ini[2] = 0.0;
-            qnode.Update_UAV_info(UAVs[i], i);
         }
     } else{
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : Please select an uav to set GPS origin!");
@@ -972,13 +956,13 @@ void MainWindow::on_checkBox_square_stateChanged(int){
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
-                    qnode.Update_Planning_Dim(10);
+                    qnode.Update_Planning_Dim(i, 10);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Square path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
                 }
                 else{
-                    qnode.Update_Planning_Dim(0);
+                    qnode.Update_Planning_Dim(i, 0);
                 }
                 break;
             }
@@ -1000,13 +984,13 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
                     size_time[0] =  ui.size_input->text().toFloat();
                     size_time[1] =  ui.time_input->text().toFloat();
                     qnode.Set_Square_Circle(i, size_time);
-                    qnode.Update_Planning_Dim(11);
+                    qnode.Update_Planning_Dim(i, 11);
                     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Circle path of uav " + QString::number(i+1) + " is set!");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
                 }
                 else{
-                    qnode.Update_Planning_Dim(0);
+                    qnode.Update_Planning_Dim(i, 0);
                 }
                 break;
             }
@@ -1020,23 +1004,23 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
 void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
     if (ui.checkBox_Plan_2D -> isChecked()){
         ui.checkBox_Plan_3D -> setChecked(false);
-        qnode.Update_Planning_Dim(2);
+        qnode.Update_Planning_Dim(99, 2); // 99 as all agents
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);
     }else{
-        qnode.Update_Planning_Dim(0);
+        qnode.Update_Planning_Dim(99, 0);
     }
 }
 void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
     if (ui.checkBox_Plan_3D -> isChecked()){
         ui.checkBox_Plan_2D -> setChecked(false);
-        qnode.Update_Planning_Dim(3);
+        qnode.Update_Planning_Dim(99, 3);
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);
     }else{
-        qnode.Update_Planning_Dim(0);
+        qnode.Update_Planning_Dim(99, 0);
     }
 }
 void MainWindow::on_checkBox_Flock_Print_stateChanged(int){

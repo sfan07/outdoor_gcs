@@ -191,7 +191,7 @@ public:
 	void Update_UAV_info(outdoor_gcs::uav_info UAV_input, int ind);
 	void Update_Avail_UAVind(std::list<int> avail_uavind_input);
 	void Update_Move(int i, bool move);
-	void Update_Planning_Dim(int i);
+	void Update_Planning_Dim(int host_ind, int i);
 	void Update_Flock_Param(float param[6]);
 	void Update_Flock_Pos(int i, float pos_input[3], bool init_fin);
 	void Update_Flock_Des(int i, bool init_fin);
@@ -260,12 +260,12 @@ private:
 	void from_callback(const mavros_msgs::Mavlink::ConstPtr &msg);
 
 	////////////////////// Multi-uav ////////////////////////////
-	int Plan_Dim; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
-	float c1 = 15.0; //7.0;
-	float c2 = 20.0; //9.0;
-	float RepulsiveGradient = 7.5*std::pow(10,6);
+	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
+	float c1 = 10.0; //7.0;
+	float c2 = 10.0; //9.0;
+	float RepulsiveGradient = 50; //7.5*std::pow(10,6);
 	float r_alpha = 3.0;
-	float max_acc = 5.0;
+	float max_acc = 10.0;
 	float max_vel = 10.0;
 	float dt = 0.25;
 	ros::Time last_change;
