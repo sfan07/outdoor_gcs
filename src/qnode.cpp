@@ -502,8 +502,7 @@ void QNode::UAVS_Do_Plan(){
 			}
 			else if (Plan_Dim == 10){ //Square path
 
-				if (sc_time == 0){
-					// Setting based on the location
+				if (sc_time == 0){ // Setting based on the location
 					if (path_i >= 4){ path_i = 0; }
 					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][path_i][0];
 					UAVs_info[host_ind].pos_des[1] = sq_corners[host_ind][path_i][1];
@@ -519,8 +518,7 @@ void QNode::UAVS_Do_Plan(){
 						path_i += 1;
 						// last_change = ros::Time::now();
 					}
-				} else{
-					// Setting based on given time
+				} else{	// Setting based on given time
 					if (path_i >= sc_time*freq){ path_i = 0; }
 					int turn = std::floor(path_i/(sc_time*freq/4.0)); // (sc_time*freq)/4 amount of i for one side
 					UAVs_info[host_ind].pos_des[0] = sq_corners[host_ind][turn][0]+(sq_corners[host_ind][turn+1][0] - sq_corners[host_ind][turn][0])*(path_i%int(sc_time*freq/4.0))/(sc_time*freq/4.0);
@@ -541,8 +539,7 @@ void QNode::UAVS_Do_Plan(){
 				}
 			}
 			else if (Plan_Dim == 11){ // circle path
-				if (sc_time == 0){
-					// Setting based on the location (set 36 points! 1 per 10 degree.)
+				if (sc_time == 0){ // Setting based on the location (set 36 points! 1 per 10 degree.)
 					if (path_i == 36){ path_i = 0; }
 					float theta = 2*M_PI*10*path_i/(sc_time*freq);
 					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
@@ -557,8 +554,7 @@ void QNode::UAVS_Do_Plan(){
 					if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
 						path_i += 1;
 					}
-				} else{
-					// Setting based on given time
+				} else{	// Setting based on given time
 					if (path_i >= sc_time*freq){ path_i = 0; }
 					float theta = 2*M_PI*path_i/(sc_time*freq);
 					UAVs_info[host_ind].pos_des[0] = (sc_size/2)*cos(theta)+centers[host_ind][0];
