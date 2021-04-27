@@ -82,8 +82,6 @@ bool QNode::init() {
 
 		uavs_arming_client[i] 	= n.serviceClient<mavros_msgs::CommandBool>("/uav" + std::to_string(i+1) +"/mavros/cmd/arming");
 		uavs_setmode_client[i] 	= n.serviceClient<mavros_msgs::SetMode>("/uav" + std::to_string(i+1) +"/mavros/set_mode");
-	
-
 
 	}
 	last_change = ros::Time::now();
@@ -337,6 +335,7 @@ void QNode::uavs_pub_command(){
 			// uavs_setpoint_pub[ind].publish(uavs_setpoint[ind]);
         	uavs_move_pub[ind].publish(Command_List[ind]);
 			pub_move_flag[ind] = false;
+			// ROS_INFO("Sent");		
 		}
 	}
 }

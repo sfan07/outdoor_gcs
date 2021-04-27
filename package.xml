@@ -36,6 +36,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>libqt4-dev</build_depend>
+  <build_depend>libqt5-dev</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>qt_build</build_depend>
   <build_depend>roscpp</build_depend>
