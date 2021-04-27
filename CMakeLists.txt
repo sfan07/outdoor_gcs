@@ -5,6 +5,15 @@
 cmake_minimum_required(VERSION 2.8.0)
 project(outdoor_gcs)
 
+
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+
 ##############################################################################
 # Catkin
 ##############################################################################
