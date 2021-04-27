@@ -13,6 +13,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+find_package(Qt5 COMPONENTS 
+Core 
+Widgets 
+REQUIRED)
+
+include_directories(${catkin_INCLUDE_DIRS})
+
 
 ##############################################################################
 # Catkin
