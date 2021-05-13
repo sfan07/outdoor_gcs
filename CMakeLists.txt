@@ -26,7 +26,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 # qt_build provides the qt cmake glue, roscpp the comms for a default talker
 find_package(catkin REQUIRED COMPONENTS
 message_generation 
-#qt_build ########## comment out this line for qt5 ##########
+qt_build ########## comment out this line for qt5 ##########
 roscpp
 geometry_msgs
 sensor_msgs
@@ -88,7 +88,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 # this comes from qt_build's qt-ros.cmake which is automatically 
 # included via the dependency call in package.xml
-# rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the component list here ########## comment out this line for qt5 ##########
+rosbuild_prepare_qt4(QtCore QtGui) # Add the appropriate components to the component list here ########## comment out this line for qt5 ##########
 
 ##############################################################################
 # Sections
@@ -98,13 +98,16 @@ file(GLOB QT_FORMS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ui/*.ui)
 file(GLOB QT_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*.qrc)
 file(GLOB_RECURSE QT_MOC RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS include/outdoor_gcs/*.hpp)
 
-#QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
-#QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
-#QT4_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
 
-QT5_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
-QT5_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
-QT5_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
+########### Comment out the part according ###########
+
+QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
+QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
+QT4_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
+
+#QT5_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
+#QT5_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
+#QT5_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
 
 ##############################################################################
 # Sources
