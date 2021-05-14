@@ -2195,6 +2195,19 @@
           </property>
          </widget>
         </widget>
+        <widget class="QCheckBox" name="checkBox_Plan_ORCA">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>ORCA</string>
+         </property>
+        </widget>
        </widget>
       </widget>
       <widget class="QWidget" name="tab_2">

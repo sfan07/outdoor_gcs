@@ -102,9 +102,10 @@ public Q_SLOTS:
 	void on_InfoLogger_Clear_clicked(bool check);
 
 	void on_checkBox_square_stateChanged(int);
+	void on_checkBox_circle_stateChanged(int);
+	void on_checkBox_Plan_ORCA_stateChanged(int);
 	void on_checkBox_Plan_2D_stateChanged(int);
 	void on_checkBox_Plan_3D_stateChanged(int);
-	void on_checkBox_circle_stateChanged(int);
 	void on_checkBox_Flock_Print_stateChanged(int);
 	void on_checkBox_imu_stateChanged(int);
 	void on_checkBox_mode_stateChanged(int);

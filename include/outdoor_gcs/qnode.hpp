@@ -40,6 +40,7 @@
 #include <outdoor_gcs/HomePosition.h> //mavros_msgs/HomePosition.h
 #include <outdoor_gcs/ControlCommand.h>
 #include <outdoor_gcs/Topic_for_log.h>
+#include <outdoor_gcs/PathPlan.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/CommandHome.h>
@@ -192,6 +193,7 @@ public:
 	void Update_Avail_UAVind(std::list<int> avail_uavind_input);
 	void Update_Move(int i, bool move);
 	void Update_Planning_Dim(int host_ind, int i);
+	void Update_PathPlan();
 	void Update_Flock_Param(float param[6]);
 	void Update_Flock_Pos(int i, float pos_input[3], bool init_fin);
 	void Update_Flock_Des(int i, bool init_fin);
@@ -260,7 +262,7 @@ private:
 	void from_callback(const mavros_msgs::Mavlink::ConstPtr &msg);
 
 	////////////////////// Multi-uav ////////////////////////////
-	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2D, 3 for 3D, 10 for square, 11 for circle
+	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 for ORCA, 10 for square, 11 for circle
 	float c1 = 10.0; //7.0;
 	float c2 = 10.0; //9.0;
 	float RepulsiveGradient = 50; //7.5*std::pow(10,6);
@@ -299,11 +301,13 @@ private:
 	ros::Subscriber uavs_gpsL_sub[5];
 	ros::Subscriber uavs_from_sub[5];
 	ros::Subscriber uavs_log_sub[5];
+	ros::Subscriber uavs_pathplan_sub;
 
 	ros::Publisher uavs_setpoint_pub[5];
 	ros::Publisher uavs_setpoint_alt_pub[5];	
 	ros::Publisher uavs_gps_home_pub[5];
 	ros::Publisher uavs_move_pub[5];
+	ros::Publisher uavs_pathplan_pub;
 
 	ros::ServiceClient uavs_arming_client[5];
 	ros::ServiceClient uavs_setmode_client[5];
@@ -320,6 +324,7 @@ private:
 	PosTarg uavs_setpoint[5];
 	AltTarg uavs_setpoint_alt[5];
 	GpsHomePos uavs_gps_home[5]; //origin of gps local
+	outdoor_gcs::PathPlan uavs_pathplan;
 	
 	void uavs_state_callback(const mavros_msgs::State::ConstPtr &msg, int ind);
 	void uavs_imu_callback(const sensor_msgs::Imu::ConstPtr &msg, int ind);
@@ -328,6 +333,7 @@ private:
 	void uavs_gpsL_callback(const Gpslocal::ConstPtr &msg, int ind);
 	void uavs_from_callback(const mavros_msgs::Mavlink::ConstPtr &msg, int ind);
 	void uavs_log_callback(const outdoor_gcs::Topic_for_log::ConstPtr &msg, int ind);
+	void uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg);
 
 };
 

@@ -82,10 +82,9 @@ bool QNode::init() {
 
 		uavs_arming_client[i] 	= n.serviceClient<mavros_msgs::CommandBool>("/uav" + std::to_string(i+1) +"/mavros/cmd/arming");
 		uavs_setmode_client[i] 	= n.serviceClient<mavros_msgs::SetMode>("/uav" + std::to_string(i+1) +"/mavros/set_mode");
-	
-
-
 	}
+	uavs_pathplan_sub = n.subscribe<outdoor_gcs::PathPlan>("/uavs/pathplan",1, &QNode::uavs_pathplan_callback, this);
+	uavs_pathplan_pub = n.advertise<outdoor_gcs::PathPlan>("/uavs/pathplan",1);
 	last_change = ros::Time::now();
 
 	start();
@@ -328,6 +327,7 @@ void QNode::uavs_call_service(){
 }
 
 void QNode::uavs_pub_command(){
+	bool pathplan_flag = false;
 	for (const auto &ind : avail_uavind){
 		if (pub_home_flag[ind]){ // gps set origin
 			uavs_gps_home_pub[ind].publish(uavs_gps_home[ind]);
@@ -338,6 +338,11 @@ void QNode::uavs_pub_command(){
         	uavs_move_pub[ind].publish(Command_List[ind]);
 			pub_move_flag[ind] = false;
 		}
+		if (Plan_Dim[ind] == 4){ pathplan_flag=true; }
+	}
+	if (pathplan_flag){	
+		Update_PathPlan();
+		uavs_pathplan_pub.publish(uavs_pathplan); 
 	}
 }
 
@@ -373,6 +378,9 @@ void QNode::uavs_from_callback(const mavros_msgs::Mavlink::ConstPtr &msg, int in
 
 void QNode::uavs_log_callback(const outdoor_gcs::Topic_for_log::ConstPtr &msg, int ind){
 	uavs_log[ind] = *msg;
+}
+void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
+	uavs_pathplan = *msg;
 }
 
 void QNode::Set_Arm_uavs(bool arm_disarm, int ind){
@@ -507,6 +515,14 @@ void QNode::UAVS_Do_Plan(){
 				}
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
+			else if (Plan_Dim[host_ind] == 4){ //ORCA
+				for (int i = 0; i < 3; i++) {
+					UAVs_info[host_ind].pos_nxt[i] = uavs_pathplan.nxt_position[host_ind*3+i];
+					// std::cout << pos_input[i] << std::endl;
+					// std::cout << UAVs_info[host_ind].pos_nxt[i] << std::endl;
+				}
+				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
+			}
 			else if (Plan_Dim[host_ind] == 10){ //Square path
 
 				if (sc_time == 0){
@@ -626,6 +642,19 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	
 	start_path = false;
 	// start_path = true;
+	if (i==4){uavs_pathplan.start = true;}
+}
+void QNode::Update_PathPlan(){
+	for (const auto &it : avail_uavind){
+		uavs_pathplan.uavs_id[it] = true;
+		uavs_pathplan.cur_position[3*it+0] = UAVs_info[it].pos_cur[0];
+		uavs_pathplan.cur_position[3*it+1] = UAVs_info[it].pos_cur[1];
+		uavs_pathplan.cur_position[3*it+2] = UAVs_info[it].pos_cur[2];
+		uavs_pathplan.des_position[3*it+0] = UAVs_info[it].pos_des[0];
+		uavs_pathplan.des_position[3*it+1] = UAVs_info[it].pos_des[1];
+		uavs_pathplan.des_position[3*it+2] = UAVs_info[it].pos_des[2];
+	}
+	uavs_pathplan.num = avail_uavind.size();
 }
 void QNode::Update_Flock_Param(float param[6]){
 	if (param[0] != 0){	c1=param[0]; }

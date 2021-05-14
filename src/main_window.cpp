@@ -1001,6 +1001,17 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
         ui.notice_logger->item(item_index)->setForeground(Qt::red);
     }
 }
+void MainWindow::on_checkBox_Plan_ORCA_stateChanged(int){
+    if (ui.checkBox_Plan_ORCA -> isChecked()){
+        // ui.checkBox_Plan_ -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 4); // 99 as all agents
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : ORCA Planning Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
 void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
     if (ui.checkBox_Plan_2D -> isChecked()){
         ui.checkBox_Plan_3D -> setChecked(false);
