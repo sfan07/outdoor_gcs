@@ -93,6 +93,7 @@ public Q_SLOTS:
 	void on_MODE_POSCTL_ALL_clicked(bool check);
 	void on_MODE_OFFBOARD_ALL_clicked(bool check);
 	void on_Button_Flock_Param_clicked(bool check);
+	void on_Button_ORCA_Param_clicked(bool check);
 	void on_Button_SetInit_clicked(bool check);
 	void on_Button_SetFin_clicked(bool check);
 	void on_Button_GoInit_clicked(bool check);
@@ -103,10 +104,11 @@ public Q_SLOTS:
 
 	void on_checkBox_square_stateChanged(int);
 	void on_checkBox_circle_stateChanged(int);
-	void on_checkBox_Plan_ORCA_stateChanged(int);
-	void on_checkBox_Plan_2D_stateChanged(int);
-	void on_checkBox_Plan_3D_stateChanged(int);
-	void on_checkBox_Flock_Print_stateChanged(int);
+	void on_checkBox_Flock_2D_stateChanged(int);
+	void on_checkBox_Flock_3D_stateChanged(int);
+	void on_checkBox_ORCA_2D_stateChanged(int);
+	void on_checkBox_ORCA_3D_stateChanged(int);
+	void on_checkBox_PPPrint_stateChanged(int);
 	void on_checkBox_imu_stateChanged(int);
 	void on_checkBox_mode_stateChanged(int);
 	void on_checkBox_gps_stateChanged(int);

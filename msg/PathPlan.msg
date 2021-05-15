@@ -7,4 +7,4 @@ bool start
 float32[15] cur_position
 float32[15] des_position
 float32[15] nxt_position
-float32[10] param
+float32[10] params

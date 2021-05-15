@@ -799,24 +799,35 @@ void MainWindow::on_Button_Flock_Param_clicked(bool check){
     int item_index = ui.notice_logger->count()-1;
     ui.notice_logger->item(item_index)->setForeground(Qt::blue);
 }
+void MainWindow::on_Button_ORCA_Param_clicked(bool check){
+    float param[4];
+    param[0] = ui.tau_input->text().toFloat();
+    param[1] = ui.pvel_input->text().toFloat();
+    param[2] = ui.r_input->text().toFloat();
+    param[3] = ui.NDist_input->text().toFloat();
+    qnode.Update_ORCA_Param(param);
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : ORCA params are updated!");
+    int item_index = ui.notice_logger->count()-1;
+    ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+}
 void MainWindow::on_Button_SetInit_clicked(bool check){
     /* read values from line edit */
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
 
-        float flock_pos[3];
-        flock_pos[0] =  ui.x_input_all->text().toFloat();
-        flock_pos[1] =  ui.y_input_all->text().toFloat();
-        flock_pos[2] =  ui.z_input_all->text().toFloat();
+        float pathplan_pos[3];
+        pathplan_pos[0] =  ui.x_input_all->text().toFloat();
+        pathplan_pos[1] =  ui.y_input_all->text().toFloat();
+        pathplan_pos[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-        if(flock_pos[0] < -10.0 || flock_pos[0] > 10.0) {
+        if(pathplan_pos[0] < -10.0 || pathplan_pos[0] > 10.0) {
             input_is_valid = false;
         }
-        if(flock_pos[1] < -10.0 || flock_pos[1] > 10.0) {
+        if(pathplan_pos[1] < -10.0 || pathplan_pos[1] > 10.0) {
             input_is_valid = false;
         }
-        if(flock_pos[2] < -1.20 || flock_pos[2] > 30.0) {
+        if(pathplan_pos[2] < -1.20 || pathplan_pos[2] > 30.0) {
             input_is_valid = false;
         }
 
@@ -824,8 +835,8 @@ void MainWindow::on_Button_SetInit_clicked(bool check){
         if(input_is_valid){
             for (const auto &i : avail_uavind){
                 if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
-                    qnode.Update_Flock_Pos(i, flock_pos, true);
-                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Init of uav " + QString::number(i+1) + " is set! ");
+                    qnode.Update_PathPlan_Pos(i, pathplan_pos, true);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Init of uav " + QString::number(i+1) + " is set! ");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
                     break;
@@ -848,19 +859,19 @@ void MainWindow::on_Button_SetFin_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
 
-        float flock_pos[3];
-        flock_pos[0] =  ui.x_input_all->text().toFloat();
-        flock_pos[1] =  ui.y_input_all->text().toFloat();
-        flock_pos[2] =  ui.z_input_all->text().toFloat();
+        float pathplan_pos[3];
+        pathplan_pos[0] =  ui.x_input_all->text().toFloat();
+        pathplan_pos[1] =  ui.y_input_all->text().toFloat();
+        pathplan_pos[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-        if(flock_pos[0] < -10.0 || flock_pos[0] > 10.0) {
+        if(pathplan_pos[0] < -10.0 || pathplan_pos[0] > 10.0) {
             input_is_valid = false;
         }
-        if(flock_pos[1] < -10.0 || flock_pos[1] > 10.0) {
+        if(pathplan_pos[1] < -10.0 || pathplan_pos[1] > 10.0) {
             input_is_valid = false;
         }
-        if(flock_pos[2] < -1.20 || flock_pos[2] > 30.0) {
+        if(pathplan_pos[2] < -1.20 || pathplan_pos[2] > 30.0) {
             input_is_valid = false;
         }
 
@@ -868,8 +879,8 @@ void MainWindow::on_Button_SetFin_clicked(bool check){
         if(input_is_valid){
             for (const auto &i : avail_uavind){
                 if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
-                    qnode.Update_Flock_Pos(i, flock_pos, false);
-                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Fin of uav " + QString::number(i+1) + " is set! ");
+                    qnode.Update_PathPlan_Pos(i, pathplan_pos, false);
+                    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Fin of uav " + QString::number(i+1) + " is set! ");
                     int item_index = ui.notice_logger->count()-1;
                     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
                     break;
@@ -892,8 +903,8 @@ void MainWindow::on_Button_GoInit_clicked(bool check){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
             if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
-                qnode.Update_Flock_Des(i, true);
-                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Flock Init! ");
+                qnode.Update_PathPlan_Des(i, true);
+                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Init! ");
                 int item_index = ui.notice_logger->count()-1;
                 ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
                 break;
@@ -910,8 +921,8 @@ void MainWindow::on_Button_GoFin_clicked(bool check){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
             if (selected_uav[0]->text() == "uav" + QString::number(i+1)){
-                qnode.Update_Flock_Des(i, false);
-                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Flock Fin! ");
+                qnode.Update_PathPlan_Des(i, false);
+                ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of uav " + QString::number(i+1) + " is set to Fin! ");
                 int item_index = ui.notice_logger->count()-1;
                 ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
                 break;
@@ -925,17 +936,17 @@ void MainWindow::on_Button_GoFin_clicked(bool check){
 }
 void MainWindow::on_Button_GoInit_ALL_clicked(bool check){
     for (const auto &i : avail_uavind){
-        qnode.Update_Flock_Des(i, true);
+        qnode.Update_PathPlan_Des(i, true);
     }
-    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Flock Init! ");
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Init! ");
     int item_index = ui.notice_logger->count()-1;
     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
 }
 void MainWindow::on_Button_GoFin_ALL_clicked(bool check){
     for (const auto &i : avail_uavind){
-        qnode.Update_Flock_Des(i, false);
+        qnode.Update_PathPlan_Des(i, false);
     }
-    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Flock Fin! ");
+    ui.notice_logger->addItem(QTime::currentTime().toString() + " : Desired location of all uavs is set to Fin! ");
     int item_index = ui.notice_logger->count()-1;
     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
 }
@@ -1001,44 +1012,64 @@ void MainWindow::on_checkBox_circle_stateChanged(int){
         ui.notice_logger->item(item_index)->setForeground(Qt::red);
     }
 }
-void MainWindow::on_checkBox_Plan_ORCA_stateChanged(int){
-    if (ui.checkBox_Plan_ORCA -> isChecked()){
+void MainWindow::on_checkBox_Flock_2D_stateChanged(int){
+    if (ui.checkBox_Flock_2D -> isChecked()){
+        ui.checkBox_Flock_3D -> setChecked(false);
+        ui.checkBox_ORCA_2D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 2); // 99 as all agents
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Flock Planning Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
+void MainWindow::on_checkBox_Flock_3D_stateChanged(int){
+    if (ui.checkBox_Flock_3D -> isChecked()){
+        ui.checkBox_Flock_2D -> setChecked(false);
+        ui.checkBox_ORCA_2D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 3);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Flock Planning Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
+void MainWindow::on_checkBox_ORCA_2D_stateChanged(int){
+    if (ui.checkBox_ORCA_2D -> isChecked()){
+        ui.checkBox_Flock_2D -> setChecked(false);
+        ui.checkBox_Flock_3D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
         // ui.checkBox_Plan_ -> setChecked(false);
         qnode.Update_Planning_Dim(99, 4); // 99 as all agents
-        ui.notice_logger->addItem(QTime::currentTime().toString() + " : ORCA Planning Set!");
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D ORCA Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);
     }else{
         qnode.Update_Planning_Dim(99, 0);
     }
 }
-void MainWindow::on_checkBox_Plan_2D_stateChanged(int){
-    if (ui.checkBox_Plan_2D -> isChecked()){
-        ui.checkBox_Plan_3D -> setChecked(false);
-        qnode.Update_Planning_Dim(99, 2); // 99 as all agents
-        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 2D Planning Set!");
+void MainWindow::on_checkBox_ORCA_3D_stateChanged(int){
+    if (ui.checkBox_ORCA_3D -> isChecked()){
+        ui.checkBox_Flock_2D -> setChecked(false);
+        ui.checkBox_Flock_3D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 5); // 99 as all agents
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D ORCA Planning Set!");
         int item_index = ui.notice_logger->count()-1;
         ui.notice_logger->item(item_index)->setForeground(Qt::blue);
     }else{
         qnode.Update_Planning_Dim(99, 0);
     }
 }
-void MainWindow::on_checkBox_Plan_3D_stateChanged(int){
-    if (ui.checkBox_Plan_3D -> isChecked()){
-        ui.checkBox_Plan_2D -> setChecked(false);
-        qnode.Update_Planning_Dim(99, 3);
-        ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D Planning Set!");
-        int item_index = ui.notice_logger->count()-1;
-        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+void MainWindow::on_checkBox_PPPrint_stateChanged(int){
+    if (ui.checkBox_PPPrint -> isChecked()){
+        checkbox_stat.print_pathplan = true;
     }else{
-        qnode.Update_Planning_Dim(99, 0);
-    }
-}
-void MainWindow::on_checkBox_Flock_Print_stateChanged(int){
-    if (ui.checkBox_Flock_Print -> isChecked()){
-        checkbox_stat.print_flock = true;
-    }else{
-        checkbox_stat.print_flock = false;
+        checkbox_stat.print_pathplan = false;
     }
 }
 void MainWindow::on_checkBox_imu_stateChanged(int){
@@ -1108,9 +1139,9 @@ void MainWindow::updateuavs(){
 
     for (const auto &i : avail_uavind){
         UAVs[i] = qnode.Get_UAV_info(i);
-        if (ui.checkBox_Offboard -> isChecked()){
-	        qnode.Set_Mode_uavs("OFFBOARD", i);
-        }
+        // if (ui.checkBox_Offboard -> isChecked()){
+	    //     qnode.Set_Mode_uavs("OFFBOARD", i);
+        // }
     }
 }
 
@@ -1122,13 +1153,17 @@ void MainWindow::updateInfoLogger(){
     int item_index = ui.info_logger->count()-1;
     ui.info_logger->item(item_index)->setForeground(Qt::white);
     ui.info_logger->item(item_index)->setBackground(Qt::black);
-    if (checkbox_stat.print_flock){
+    if (checkbox_stat.print_pathplan){
         ui.info_logger->addItem("Flock Param: c1: " + QString::number(qnode.GetFlockParam(0), 'f', 1) +
                                 ". c2: " + QString::number(qnode.GetFlockParam(1), 'f', 1) + 
                                 ". rho: " + QString::number(qnode.GetFlockParam(2), 'f', 1));
         ui.info_logger->addItem("             r_alpha: " + QString::number(qnode.GetFlockParam(3), 'f', 1) +
                                 ". a_max: " + QString::number(qnode.GetFlockParam(4), 'f', 1) +
                                 ". v_max: " + QString::number(qnode.GetFlockParam(5), 'f', 1));
+        ui.info_logger->addItem("ORCA Param: tau" + QString::number(qnode.GetORCAParam(0), 'f', 1) +
+                                ". pref_v: " + QString::number(qnode.GetORCAParam(1), 'f', 1) +
+                                ". r: " + QString::number(qnode.GetORCAParam(2), 'f', 1) +
+                                ". NDist: " + QString::number(qnode.GetORCAParam(3), 'f', 1));
     }
 
     for (const auto &it : avail_uavind){
@@ -1211,14 +1246,14 @@ void MainWindow::updateInfoLogger(){
                 ui.info_logger->item(item_index)->setForeground(Qt::darkGreen);
             }
         }
-        if (checkbox_stat.print_flock){
-            ui.info_logger->addItem("Flock Init Position: X: " + QString::number(UAVs[it].pos_ini[0], 'f', 3) +
+        if (checkbox_stat.print_pathplan){
+            ui.info_logger->addItem("PP Init Position: X: " + QString::number(UAVs[it].pos_ini[0], 'f', 3) +
                                     ". Y: " + QString::number(UAVs[it].pos_ini[1], 'f', 3) +
                                     ". Z: " + QString::number(UAVs[it].pos_ini[2], 'f', 3));
-            ui.info_logger->addItem("Flock Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
+            ui.info_logger->addItem("PP Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
                                     ". Y: " + QString::number(UAVs[it].pos_nxt[1], 'f', 3) +
                                     ". Z: " + QString::number(UAVs[it].pos_nxt[2], 'f', 3));
-            ui.info_logger->addItem("Flock Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+            ui.info_logger->addItem("PP Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
                                     ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) +
                                     ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
         }

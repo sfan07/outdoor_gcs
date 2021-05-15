@@ -34,7 +34,7 @@ class O_PathPlan(object):
         self.dt = dt
         self.change_time = rospy.Time.now()
 
-        self.cur_pos = np.zeros((15)) # max 5 drones, each with xxyz
+        self.cur_pos = np.zeros((15)) # max 5 drones, each with xyz
         self.des_pos = np.zeros((15))
         self._dist_to_goal = {}
 
@@ -42,25 +42,25 @@ class O_PathPlan(object):
         self.agents_num = 0
         self.uavs_id = [False,False,False,False,False]
 
-        self.radius = 3.0
-        self.MaxVelo = 10.0 #3.0 #1.5 #*100
-        self.MaxAcc = 10.0
+        self.radius = 0.8
+        self.MaxVelo = 2.0 #10.0
+        # self.MaxAcc = 10.0
         # self.d_star = self.radius
         # self.c1 = 7*4.5
         # self.c2 = 9*4.5
         # self.RepulsiveGradient = 7.5*100
-        self.neighborDist, self.timeHorizon, self.velocity = self.radius, 2, (0,0,0)
+        self.neighborDist, self.timeHorizon, self.velocity = 3.0, 2, (0,0,0)
 
         self.sim = rvo23d.PyRVOSimulator(self.dt, self.neighborDist, self.agents_num,
                         self.timeHorizon, self.radius, self.MaxVelo, self.velocity)
 
-        self.pathplan_pub_msg = PathPlan()
+        self.pathplan_pub_msg, self.pathplan_pub_msg_nxt = PathPlan(), PathPlan()
         rospy.Subscriber("/uavs/pathplan", PathPlan, self.pathplan_callback)
-        self.pathplan_pub = rospy.Publisher("/uavs/pathplan", PathPlan, queue_size=1)
+        self.pathplan_pub = rospy.Publisher("/uavs/pathplan_nxt", PathPlan, queue_size=1)
 
 
     def update_nxtpos(self):
-        self.pathplan_pub_msg.header.stamp = rospy.Time.now()
+        self.pathplan_pub_msg_nxt.header.stamp = rospy.Time.now()
         nxt, j = [], 0
         for i in range(len(self.uavs_id)):
             if (self.uavs_id[i]):
@@ -68,26 +68,30 @@ class O_PathPlan(object):
                 j+=1
             else:
                 nxt.extend([0,0,0])
-        self.pathplan_pub_msg.nxt_position = list(nxt)
+        self.pathplan_pub_msg_nxt.nxt_position = list(nxt)
         # print(self.pathplan_pub_msg.nxt_position)
 
     def publish_msg(self):
-        self.pathplan_pub.publish(self.pathplan_pub_msg)
+        self.pathplan_pub.publish(self.pathplan_pub_msg_nxt)
 
     def iteration(self, event):
-        if (self.start_sim and rospy.Time.now()-self.change_time > rospy.Duration(secs=5)):#self.sim.getNumAgents()!=self.agents_num):
+        if (self.start_sim and rospy.Time.now()-self.change_time > rospy.Duration(secs=5)):
             self.change_time = rospy.Time.now()
-            self.pathplan_pub_msg.start, self.start_sim = False, False
+            self.pathplan_pub_msg_nxt.start, self.start_sim = False, False
             for i in range(len(self.uavs_id)):
-                if (self.uavs_id[i]):
-                    self.sim.addAgent((self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]))
+                # print(self.agents_num, self.sim.getNumAgents())
+                # print(self.sim.getNumAgents())
+                # print('\n')
+                if (self.uavs_id[i] and self.sim.getNumAgents()!=self.agents_num):
+                    self.sim.addAgent((self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]), 
+                        self.neighborDist, self.agents_num, self.timeHorizon, self.radius, self.MaxVelo, self.velocity)
         if (self.agents_num != 0):
             j = 0
-            print(self.sim.getNumAgents())
+            # print(self.sim.getNumAgents())
             for i in range(len(self.uavs_id)):
                 if (self.uavs_id[i]):
-                    self.sim.setAgentPosition(j, (self.cur_pos[i*3], self.cur_pos[(i+1)*3], self.cur_pos[(i+2)*3]))
-                    vel = self.des_pos[i*3:(i+2)*3] - self.cur_pos[i*3:(i+2)*3]
+                    self.sim.setAgentPosition(j, (self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]))
+                    vel = self.des_pos[i*3:i*3+3] - self.cur_pos[i*3:i*3+3]
                     nor = np.linalg.norm(vel)
                     if nor < 10**-5:
                         prefV[0], prefV[1], prefV[2] = 0.0, 0.0, 0.0
@@ -106,6 +110,10 @@ class O_PathPlan(object):
         self.uavs_id = msg.uavs_id
         self.cur_pos = np.asarray(msg.cur_position)
         self.des_pos = np.asarray(msg.des_position)
+        self.timeHorizon = msg.params[0]
+        self.MaxVelo = msg.params[1]
+        self.radius = msg.params[2]
+        self.neighborDist = msg.params[4]
 
 
 if __name__ == '__main__':

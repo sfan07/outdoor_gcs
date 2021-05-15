@@ -83,7 +83,7 @@ bool QNode::init() {
 		uavs_arming_client[i] 	= n.serviceClient<mavros_msgs::CommandBool>("/uav" + std::to_string(i+1) +"/mavros/cmd/arming");
 		uavs_setmode_client[i] 	= n.serviceClient<mavros_msgs::SetMode>("/uav" + std::to_string(i+1) +"/mavros/set_mode");
 	}
-	uavs_pathplan_sub = n.subscribe<outdoor_gcs::PathPlan>("/uavs/pathplan",1, &QNode::uavs_pathplan_callback, this);
+	uavs_pathplan_sub = n.subscribe<outdoor_gcs::PathPlan>("/uavs/pathplan_nxt",1, &QNode::uavs_pathplan_callback, this);
 	uavs_pathplan_pub = n.advertise<outdoor_gcs::PathPlan>("/uavs/pathplan",1);
 	last_change = ros::Time::now();
 
@@ -338,7 +338,7 @@ void QNode::uavs_pub_command(){
         	uavs_move_pub[ind].publish(Command_List[ind]);
 			pub_move_flag[ind] = false;
 		}
-		if (Plan_Dim[ind] == 4){ pathplan_flag=true; }
+		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 5){ pathplan_flag=true; }
 	}
 	if (pathplan_flag){	
 		Update_PathPlan();
@@ -380,7 +380,18 @@ void QNode::uavs_log_callback(const outdoor_gcs::Topic_for_log::ConstPtr &msg, i
 	uavs_log[ind] = *msg;
 }
 void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
-	uavs_pathplan = *msg;
+	uavs_pathplan_nxt = *msg;
+	for (const auto &ind : avail_uavind){
+		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 5){
+			UAVs_info[ind].pos_nxt[0] = uavs_pathplan_nxt.nxt_position[ind*3+0];
+			UAVs_info[ind].pos_nxt[1] = uavs_pathplan_nxt.nxt_position[ind*3+1];
+			UAVs_info[ind].pos_nxt[2] = uavs_pathplan_nxt.nxt_position[ind*3+2];
+		}
+		if (Plan_Dim[ind] == 5){
+			UAVs_info[ind].pos_nxt[2] = UAVs_info[ind].pos_des[2];
+		}
+	}
+	uavs_pathplan.start = uavs_pathplan_nxt.start;
 }
 
 void QNode::Set_Arm_uavs(bool arm_disarm, int ind){
@@ -425,7 +436,8 @@ void QNode::Set_Square_Circle(int host_ind, float input[2]){
 	sq_corners[host_ind][2][1] = -sc_size/2+centers[host_ind][1];
 	sq_corners[host_ind][3][0] = sc_size/2+centers[host_ind][0];
 	sq_corners[host_ind][3][1] = -sc_size/2+centers[host_ind][1];
-	sq_corners[host_ind][4][0] = sc_size/2+centers[host_ind][0]; // Extra corner for coding simplicity (to create a loop)
+	// Extra corner for coding simplicity (to close up the loop)
+	sq_corners[host_ind][4][0] = sc_size/2+centers[host_ind][0]; 
 	sq_corners[host_ind][4][1] = sc_size/2+centers[host_ind][1];
 }
 
@@ -461,7 +473,7 @@ void QNode::UAVS_Do_Plan(){
 			if (Plan_Dim[host_ind] == 0){
 				move_uavs(host_ind, UAVs_info[host_ind].pos_des);
 			}
-			else if (Plan_Dim[host_ind] == 2){
+			else if (Plan_Dim[host_ind] == 2){ // 2D Flock
 				float force[2];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -475,20 +487,17 @@ void QNode::UAVS_Do_Plan(){
 						force[1] += ForceComponent*(dist_v[1]/dist);
 					}
 				}
-				// float pos_input[3];
 				for (int i = 0; i < 2; i++) {
 					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
 					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
-					// pos_input[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					// std::cout << pos_input[i] << std::endl;
 					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
 				}
 				UAVs_info[host_ind].pos_nxt[2] = UAVs_info[host_ind].pos_des[2];
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
-				// move_uavs(host_ind, pos_input);
 			}
-			else if (Plan_Dim[host_ind] == 3){
+			else if (Plan_Dim[host_ind] == 3){ // 3D Flock
 				float force[3];
 				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
 				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
@@ -505,7 +514,6 @@ void QNode::UAVS_Do_Plan(){
 						force[2] += ForceComponent*(dist_v[2]/dist);
 					}
 				}
-				// float pos_input[3];
 				for (int i = 0; i < 3; i++) {
 					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
 					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
@@ -515,16 +523,10 @@ void QNode::UAVS_Do_Plan(){
 				}
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
-			else if (Plan_Dim[host_ind] == 4){ //ORCA
-				for (int i = 0; i < 3; i++) {
-					UAVs_info[host_ind].pos_nxt[i] = uavs_pathplan.nxt_position[host_ind*3+i];
-					// std::cout << pos_input[i] << std::endl;
-					// std::cout << UAVs_info[host_ind].pos_nxt[i] << std::endl;
-				}
+			else if (Plan_Dim[host_ind] == 4 || Plan_Dim[host_ind] == 5){ //2D & 3D ORCA
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
 			else if (Plan_Dim[host_ind] == 10){ //Square path
-
 				if (sc_time == 0){
 					// Setting based on the location
 					if (path_i >= 4){ path_i = 0; }
@@ -603,23 +605,6 @@ void QNode::UAVS_Do_Plan(){
 			}
 		}
 	}	
-	// for cf_id in self.cf_ids:
-	// 	other_cfs = self.cf_ids[:]
-	// 	other_cfs.remove(cf_id)
-	// 	self._dist_to_goal[str(cf_id)] = np.linalg.norm(self._pos[str(cf_id)] - self.finals[str(cf_id)])
-	// 	force = -self.c1*self._vel[str(cf_id)] - self.c2*(self._pos[str(cf_id)] - self.finals[str(cf_id)])
-	// 	for other_cf in other_cfs:
-	// 		dist_v = self._pos[str(other_cf)] - self._pos[str(cf_id)]
-	// 		dist = np.linalg.norm(dist_v)
-	// 		d = 2*self.radius + self.d_star
-	// 		CommunicationRadious = np.cbrt(3*np.square(self.MaxVelo)/(2*self.RepulsiveGradient)) + d
-	// 		if dist < CommunicationRadious:
-	// 			ForceComponent = -self.RepulsiveGradient * np.square(dist - CommunicationRadious)
-	// 			force += ForceComponent * (dist_v)/dist
-	// 		velocity_d = self._vel[str(cf_id)] + force * self.dt
-	// 		position_d = self._pos[str(cf_id)] + velocity_d*self.dt
-	// 		position_d[2] = 1.0
-	// 		self.update_pos(str(cf_id), position_d)
 }
 
 void QNode::Update_UAV_info(outdoor_gcs::uav_info UAV_input, int ind){
@@ -633,7 +618,7 @@ void QNode::Update_Move(int i, bool move){
 	UAVs_info[i].move = move;
 }
 void QNode::Update_Planning_Dim(int host_ind, int i){
-	// 0 for no planning, 2 for 2D, 3 for 3D, 10 for square
+	// 0 for no planning, 2 for 2D, 3 for 3D, 4 for ORCA, 10 for square, 11 for circle
 	if (host_ind==99){
     	for (const auto &it : avail_uavind){
 			Plan_Dim[it] = i;
@@ -642,7 +627,7 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	
 	start_path = false;
 	// start_path = true;
-	if (i==4){uavs_pathplan.start = true;}
+	if (i==4 || i==5){uavs_pathplan.start = true;}
 }
 void QNode::Update_PathPlan(){
 	for (const auto &it : avail_uavind){
@@ -653,6 +638,12 @@ void QNode::Update_PathPlan(){
 		uavs_pathplan.des_position[3*it+0] = UAVs_info[it].pos_des[0];
 		uavs_pathplan.des_position[3*it+1] = UAVs_info[it].pos_des[1];
 		uavs_pathplan.des_position[3*it+2] = UAVs_info[it].pos_des[2];
+		uavs_pathplan.nxt_position[3*it+0] = UAVs_info[it].pos_nxt[0];
+		uavs_pathplan.nxt_position[3*it+1] = UAVs_info[it].pos_nxt[1];
+		uavs_pathplan.nxt_position[3*it+2] = UAVs_info[it].pos_nxt[2];
+	}
+	for (int i = 0; i < 4; i++) {
+		uavs_pathplan.params[i] = orca_param[i];
 	}
 	uavs_pathplan.num = avail_uavind.size();
 }
@@ -664,7 +655,12 @@ void QNode::Update_Flock_Param(float param[6]){
 	if (param[4] != 0){	max_acc=param[4]; }
 	if (param[5] != 0){	max_vel=param[5]; }
 }
-void QNode::Update_Flock_Pos(int i, float pos_input[3], bool init_fin){ //True for init, false for final pos
+void QNode::Update_ORCA_Param(float param[4]){
+	for (int i = 0; i < 4; i++) {
+		orca_param[i] = param[i];
+	}
+}
+void QNode::Update_PathPlan_Pos(int i, float pos_input[3], bool init_fin){ //True for init, false for final pos
 	if (init_fin){
 		UAVs_info[i].pos_ini[0] = pos_input[0];
 		UAVs_info[i].pos_ini[1] = pos_input[1];
@@ -675,7 +671,7 @@ void QNode::Update_Flock_Pos(int i, float pos_input[3], bool init_fin){ //True f
 		UAVs_info[i].pos_fin[2] = pos_input[2];
 	}
 }
-void QNode::Update_Flock_Des(int i, bool init_fin){ //True for init, false for final pos
+void QNode::Update_PathPlan_Des(int i, bool init_fin){ //True for init, false for final pos
 	if (init_fin){
 		UAVs_info[i].pos_des[0] = UAVs_info[i].pos_ini[0];
 		UAVs_info[i].pos_des[1] = UAVs_info[i].pos_ini[1];
@@ -717,6 +713,9 @@ float QNode::GetFlockParam(int i){
 	else if (i == 3){return r_alpha;}
 	else if (i == 4){return max_acc;}
 	else if (i == 5){return max_vel;}
+}
+float QNode::GetORCAParam(int i){
+	return orca_param[i];
 }
 
 

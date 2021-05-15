@@ -128,7 +128,7 @@ namespace outdoor_gcs {
 		bool print_gps = true;
 		bool print_local = true;
 		bool print_des = true;
-		bool print_flock = false;
+		bool print_pathplan = false;
 		bool clear_each_print = true;
 	};
 
@@ -195,8 +195,9 @@ public:
 	void Update_Planning_Dim(int host_ind, int i);
 	void Update_PathPlan();
 	void Update_Flock_Param(float param[6]);
-	void Update_Flock_Pos(int i, float pos_input[3], bool init_fin);
-	void Update_Flock_Des(int i, bool init_fin);
+	void Update_ORCA_Param(float param[4]);
+	void Update_PathPlan_Pos(int i, float pos_input[3], bool init_fin);
+	void Update_PathPlan_Des(int i, bool init_fin);
 
 	State GetState_uavs(int ind);
 	Imu GetImu_uavs(int ind);
@@ -206,6 +207,7 @@ public:
 	outdoor_gcs::uav_info Get_UAV_info(int ind);
 	outdoor_gcs::Topic_for_log GetLog_uavs(int ind);
 	float GetFlockParam(int i);
+	float GetORCAParam(int i);
 
 	QStringList lsAllTopics();
 	outdoor_gcs::Angles quaternion_to_euler(float quat[4]);
@@ -262,23 +264,28 @@ private:
 	void from_callback(const mavros_msgs::Mavlink::ConstPtr &msg);
 
 	////////////////////// Multi-uav ////////////////////////////
-	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 for ORCA, 10 for square, 11 for circle
+	float dt = 0.25;
+	ros::Time last_change;
+	
+	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 5 for ORCA, 10 for square, 11 for circle
+	
+	// Flocking params
 	float c1 = 10.0; //7.0;
 	float c2 = 10.0; //9.0;
 	float RepulsiveGradient = 50; //7.5*std::pow(10,6);
 	float r_alpha = 3.0;
 	float max_acc = 10.0;
 	float max_vel = 10.0;
-	float dt = 0.25;
-	ros::Time last_change;
+	
+	float orca_param[4]; // tau, pref_v, r, Neighbor Dist
+
+	// Square & circle 
 	float sc_size;
 	float sc_time;
 	float sq_corners[5][5][2]; // 5 uavs, 4+1 conrners (extra one for coding simplicity purpose), 2D: xy
 	float square_x[8] = {2, 2, 2, 0, -2, -2, -2, 0}; 
 	float square_y[8] = {2, 0, -2, -2, -2, 0, 2, 2};
 	int path_i = 0;
-	// int square_i = 0;
-	// int circle_i = 0;
 	float centers[5][3];
 	bool start_path = false;
 
@@ -325,6 +332,7 @@ private:
 	AltTarg uavs_setpoint_alt[5];
 	GpsHomePos uavs_gps_home[5]; //origin of gps local
 	outdoor_gcs::PathPlan uavs_pathplan;
+	outdoor_gcs::PathPlan uavs_pathplan_nxt;
 	
 	void uavs_state_callback(const mavros_msgs::State::ConstPtr &msg, int ind);
 	void uavs_imu_callback(const sensor_msgs::Imu::ConstPtr &msg, int ind);
