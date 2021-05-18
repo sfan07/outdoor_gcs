@@ -1056,7 +1056,7 @@ void MainWindow::on_checkBox_ORCA_3D_stateChanged(int){
     if (ui.checkBox_ORCA_3D -> isChecked()){
         ui.checkBox_Flock_2D -> setChecked(false);
         ui.checkBox_Flock_3D -> setChecked(false);
-        ui.checkBox_ORCA_3D -> setChecked(false);
+        ui.checkBox_ORCA_2D -> setChecked(false);
         qnode.Update_Planning_Dim(99, 5); // 99 as all agents
         ui.notice_logger->addItem(QTime::currentTime().toString() + " : 3D ORCA Planning Set!");
         int item_index = ui.notice_logger->count()-1;
