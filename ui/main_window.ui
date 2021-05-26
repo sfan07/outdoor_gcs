@@ -1881,15 +1881,15 @@
            <x>0</x>
            <y>60</y>
            <width>251</width>
-           <height>141</height>
+           <height>121</height>
           </rect>
          </property>
          <widget class="QCheckBox" name="checkBox_PPPrint">
           <property name="geometry">
            <rect>
             <x>190</x>
-            <y>0</y>
-            <width>61</width>
+            <y>5</y>
+            <width>71</width>
             <height>16</height>
            </rect>
           </property>
@@ -1897,125 +1897,13 @@
            <string>Print</string>
           </property>
          </widget>
-         <widget class="QWidget" name="widget_6" native="true">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>0</y>
-            <width>151</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <widget class="QLabel" name="label_2">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>51</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="font">
-            <font>
-             <family>URW Bookman L</family>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Flock</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="checkBox_Flock_2D">
-           <property name="geometry">
-            <rect>
-             <x>50</x>
-             <y>0</y>
-             <width>51</width>
-             <height>16</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>2D</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="checkBox_Flock_3D">
-           <property name="geometry">
-            <rect>
-             <x>100</x>
-             <y>0</y>
-             <width>61</width>
-             <height>16</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>3D</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QWidget" name="widget_7" native="true">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>20</y>
-            <width>151</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <widget class="QLabel" name="label_6">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>51</width>
-             <height>17</height>
-            </rect>
-           </property>
-           <property name="font">
-            <font>
-             <family>URW Bookman L</family>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>ORCA</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="checkBox_ORCA_2D">
-           <property name="geometry">
-            <rect>
-             <x>50</x>
-             <y>0</y>
-             <width>51</width>
-             <height>16</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>2D</string>
-           </property>
-          </widget>
-          <widget class="QCheckBox" name="checkBox_ORCA_3D">
-           <property name="geometry">
-            <rect>
-             <x>100</x>
-             <y>0</y>
-             <width>61</width>
-             <height>16</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>3D</string>
-           </property>
-          </widget>
-         </widget>
          <widget class="QTabWidget" name="tabWidget">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>40</y>
+            <y>0</y>
             <width>231</width>
-            <height>85</height>
+            <height>111</height>
            </rect>
           </property>
           <property name="minimumSize">
@@ -2049,8 +1937,8 @@
            <widget class="QWidget" name="widget_5" native="true">
             <property name="geometry">
              <rect>
-              <x>20</x>
-              <y>0</y>
+              <x>10</x>
+              <y>20</y>
               <width>201</width>
               <height>51</height>
              </rect>
@@ -2151,6 +2039,42 @@
              </property>
             </widget>
            </widget>
+           <widget class="QWidget" name="widget_6" native="true">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>181</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <widget class="QCheckBox" name="checkBox_Flock_2D">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>0</y>
+               <width>51</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>2D</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_Flock_3D">
+             <property name="geometry">
+              <rect>
+               <x>60</x>
+               <y>0</y>
+               <width>61</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>3D</string>
+             </property>
+            </widget>
+           </widget>
           </widget>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -2159,8 +2083,8 @@
            <widget class="QWidget" name="widget_8" native="true">
             <property name="geometry">
              <rect>
-              <x>30</x>
-              <y>0</y>
+              <x>10</x>
+              <y>20</y>
               <width>171</width>
               <height>51</height>
              </rect>
@@ -2232,6 +2156,42 @@
              </property>
              <property name="text">
               <string/>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QWidget" name="widget_7" native="true">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>0</y>
+              <width>151</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <widget class="QCheckBox" name="checkBox_ORCA_2D">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>51</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>2D</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="checkBox_ORCA_3D">
+             <property name="geometry">
+              <rect>
+               <x>50</x>
+               <y>0</y>
+               <width>61</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>3D</string>
              </property>
             </widget>
            </widget>
@@ -2308,7 +2268,7 @@
         <property name="geometry">
          <rect>
           <x>260</x>
-          <y>570</y>
+          <y>560</y>
           <width>231</width>
           <height>81</height>
          </rect>
