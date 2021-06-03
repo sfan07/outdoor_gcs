@@ -100,7 +100,8 @@ public Q_SLOTS:
 	void on_Button_GoFin_clicked(bool check);
 	void on_Button_GoInit_ALL_clicked(bool check);
 	void on_Button_GoFin_ALL_clicked(bool check);
-	void on_InfoLogger_Clear_clicked(bool check);
+	void on_Button_uavitem_clicked(bool check);
+	// void on_InfoLogger_Clear_clicked(bool check);
 
 	void on_checkBox_square_stateChanged(int);
 	void on_checkBox_circle_stateChanged(int);

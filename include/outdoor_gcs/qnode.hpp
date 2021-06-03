@@ -130,6 +130,7 @@ namespace outdoor_gcs {
 		bool print_des = true;
 		bool print_pathplan = false;
 		bool clear_each_print = true;
+		int uav_item = 1;
 	};
 
 	enum Command_Type
