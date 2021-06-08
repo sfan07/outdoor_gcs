@@ -103,6 +103,7 @@ public Q_SLOTS:
 	void on_Button_uavitem_clicked(bool check);
 	// void on_InfoLogger_Clear_clicked(bool check);
 
+	void on_checkBox_rtcm_stateChanged(int);
 	void on_checkBox_square_stateChanged(int);
 	void on_checkBox_circle_stateChanged(int);
 	void on_checkBox_Flock_2D_stateChanged(int);

@@ -1449,6 +1449,19 @@
           <string>Stop ALL</string>
          </property>
         </widget>
+        <widget class="QCheckBox" name="checkBox_rtcm">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>5</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>rtcm</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QFrame" name="frame_3">
         <property name="geometry">
@@ -1894,19 +1907,6 @@
            <height>121</height>
           </rect>
          </property>
-         <widget class="QCheckBox" name="checkBox_PPPrint">
-          <property name="geometry">
-           <rect>
-            <x>190</x>
-            <y>5</y>
-            <width>71</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Print</string>
-          </property>
-         </widget>
          <widget class="QTabWidget" name="tabWidget">
           <property name="geometry">
            <rect>
@@ -2272,6 +2272,19 @@
            <string>60</string>
           </property>
          </widget>
+        </widget>
+        <widget class="QCheckBox" name="checkBox_PPPrint">
+         <property name="geometry">
+          <rect>
+           <x>170</x>
+           <y>5</y>
+           <width>91</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Print_PP</string>
+         </property>
         </widget>
        </widget>
        <widget class="QWidget" name="widget_3" native="true">

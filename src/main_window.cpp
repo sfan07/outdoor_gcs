@@ -972,6 +972,19 @@ void MainWindow::on_Button_uavitem_clicked(bool check){
 // }
 
 // CheckBox //
+void MainWindow::on_checkBox_rtcm_stateChanged(int){
+    if (ui.checkBox_rtcm -> isChecked()){ 
+        qnode.Update_RTCM(true);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Send RTCM signal!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+    } else{ 
+        qnode.Update_RTCM(false);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Stop sending RTCM signal!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::red);
+    }
+}
 void MainWindow::on_checkBox_square_stateChanged(int){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
@@ -1171,15 +1184,16 @@ void MainWindow::updateInfoLogger(){
     ui.info_logger->item(item_index)->setBackground(Qt::black);
     if (checkbox_stat.print_pathplan){
         ui.info_logger->addItem("Flock Param: c1: " + QString::number(qnode.GetFlockParam(0), 'f', 1) +
-                                ". c2: " + QString::number(qnode.GetFlockParam(1), 'f', 1) + 
-                                ". rho: " + QString::number(qnode.GetFlockParam(2), 'f', 1));
+                                ", c2: " + QString::number(qnode.GetFlockParam(1), 'f', 1) + 
+                                ", rho: " + QString::number(qnode.GetFlockParam(2), 'f', 1));
         ui.info_logger->addItem("             r_alpha: " + QString::number(qnode.GetFlockParam(3), 'f', 1) +
-                                ". a_max: " + QString::number(qnode.GetFlockParam(4), 'f', 1) +
-                                ". v_max: " + QString::number(qnode.GetFlockParam(5), 'f', 1));
-        ui.info_logger->addItem("ORCA Param: tau" + QString::number(qnode.GetORCAParam(0), 'f', 1) +
-                                ". pref_v: " + QString::number(qnode.GetORCAParam(1), 'f', 1) +
-                                ". r: " + QString::number(qnode.GetORCAParam(2), 'f', 1) +
-                                ". NDist: " + QString::number(qnode.GetORCAParam(3), 'f', 1));
+                                ", a_max: " + QString::number(qnode.GetFlockParam(4), 'f', 1) +
+                                ", v_max: " + QString::number(qnode.GetFlockParam(5), 'f', 1));
+        ui.info_logger->addItem("ORCA Param: tau: " + QString::number(qnode.GetORCAParam(0), 'f', 1) +
+                                ", pref_v: " + QString::number(qnode.GetORCAParam(1), 'f', 1) +
+                                ", r: " + QString::number(qnode.GetORCAParam(2), 'f', 1) +
+                                ", NDist: " + QString::number(qnode.GetORCAParam(3), 'f', 1));
+        ui.info_logger->addItem("----------------------------------------------------------------------------------------");
     }
 
     if (checkbox_stat.uav_item == 1){ // Print by uav

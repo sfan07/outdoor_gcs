@@ -64,6 +64,7 @@ bool QNode::init() {
 	uav_setmode_client 	= n.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 	uav_sethome_client 	= n.serviceClient<mavros_msgs::CommandHome>("/mavros/cmd/set_home");
 
+	ntrip_rtcm = n.subscribe<RTCM>("/rtcm", 1, &QNode::rtcm_callback, this);
 	for (int i = 0; i < DroneNumber; i++) {
 		// std::cout << "/uav" + std::to_string(i+1) + "/mavros/imu/data" << std::endl;
 		// std::string name = "/uav" + std::to_string(i+1) + "/mavros/imu/data";
@@ -79,6 +80,7 @@ bool QNode::init() {
 		uavs_setpoint_alt_pub[i] 	= n.advertise<AltTarg>("/uav" + std::to_string(i+1) + "/mavros/setpoint_raw/attitude", 1);
 		uavs_gps_home_pub[i] 		= n.advertise<GpsHomePos>("/uav" + std::to_string(i+1) + "/mavros/global_position/home", 1);
         uavs_move_pub[i] 			= n.advertise<outdoor_gcs::ControlCommand>("/uav" + std::to_string(i+1) + "/px4_command/control_command", 1);
+		uavs_gps_rtcm_pub[i] 		= n.advertise<RTCM>("/uav" + std::to_string(i+1) + "/mavros/gps_rtk/send_rtcm", 1);
 
 		uavs_arming_client[i] 	= n.serviceClient<mavros_msgs::CommandBool>("/uav" + std::to_string(i+1) +"/mavros/cmd/arming");
 		uavs_setmode_client[i] 	= n.serviceClient<mavros_msgs::SetMode>("/uav" + std::to_string(i+1) +"/mavros/set_mode");
@@ -338,14 +340,24 @@ void QNode::uavs_pub_command(){
         	uavs_move_pub[ind].publish(Command_List[ind]);
 			pub_move_flag[ind] = false;
 		}
+		if (received_rtcm && pub_rtcm_flag){
+			uavs_gps_rtcm[ind].data = gps_rtcm.data;
+    		uavs_gps_rtcm[ind].header.stamp = ros::Time::now();
+			uavs_gps_rtcm[ind].header.seq += 1;
+        	uavs_gps_rtcm_pub[ind].publish(uavs_gps_rtcm[ind]);
+		}
 		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 5){ pathplan_flag=true; }
 	}
 	if (pathplan_flag){	
 		Update_PathPlan();
 		uavs_pathplan_pub.publish(uavs_pathplan); 
 	}
+	received_rtcm = false;
 }
-
+void QNode::rtcm_callback(const RTCM::ConstPtr &msg){
+	gps_rtcm = *msg;
+	received_rtcm = true;
+}
 void QNode::uavs_state_callback(const mavros_msgs::State::ConstPtr &msg, int ind){
 	uavs_state[ind] = *msg;
 	UAVs_info[ind].prestateReceived = true;
@@ -442,11 +454,9 @@ void QNode::Set_Square_Circle(int host_ind, float input[2]){
 }
 
 void QNode::move_uavs(int ID, float pos_input[3]) {
-    // commandFlag[ID] = true;
 	pub_move_flag[ID] = true;
     Command_List[ID].header.stamp = ros::Time::now();
     Command_List[ID].Mode = Move_ENU;
-    // generate_com(0, state_desired,Command_List[ID]);
 
 	Command_List[ID].Reference_State.Sub_mode  = 0;
 	Command_List[ID].Reference_State.position_ref[0] = pos_input[0];
@@ -612,6 +622,9 @@ void QNode::Update_UAV_info(outdoor_gcs::uav_info UAV_input, int ind){
 }
 void QNode::Update_Avail_UAVind(std::list<int> avail_uavind_input){
 	avail_uavind = avail_uavind_input;
+}
+void QNode::Update_RTCM(bool sent){
+	pub_rtcm_flag = sent;
 }
 void QNode::Update_Move(int i, bool move){
 	Move[i] = move;

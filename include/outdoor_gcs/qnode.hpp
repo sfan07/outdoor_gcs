@@ -55,6 +55,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <mavros_msgs/AttitudeTarget.h>
+#include <mavros_msgs/RTCM.h>
 
 
 /*****************************************************************************
@@ -69,6 +70,7 @@ using Gpslocal 	= nav_msgs::Odometry;
 using GpsHomePos = outdoor_gcs::HomePosition;
 using PosTarg 	= mavros_msgs::PositionTarget;
 using AltTarg 	= mavros_msgs::AttitudeTarget;
+using RTCM 		= mavros_msgs::RTCM;
 
 namespace outdoor_gcs {
 
@@ -192,6 +194,7 @@ public:
 
 	void Update_UAV_info(outdoor_gcs::uav_info UAV_input, int ind);
 	void Update_Avail_UAVind(std::list<int> avail_uavind_input);
+	void Update_RTCM(bool sent);
 	void Update_Move(int i, bool move);
 	void Update_Planning_Dim(int host_ind, int i);
 	void Update_PathPlan();
@@ -278,7 +281,7 @@ private:
 	float max_acc = 10.0;
 	float max_vel = 10.0;
 	
-	float orca_param[4]; // tau, pref_v, r, Neighbor Dist
+	float orca_param[4] = {2.0, 2.0, 0.8, 3.0}; // tau, pref_v, r, Neighbor Dist
 
 	// Square & circle 
 	float sc_size;
@@ -296,12 +299,13 @@ private:
 	int service_flag[5];
 	bool pub_move_flag[5];
 	bool pub_home_flag[5];
+	bool pub_rtcm_flag;
+	bool received_rtcm;
 	bool Move[5]; // default false
 
-	outdoor_gcs::ControlCommand Command_List[3];
-	bool commandFlag[3];
     int comid = 1;
 
+	ros::Subscriber ntrip_rtcm;
 	ros::Subscriber uavs_state_sub[5];
 	ros::Subscriber uavs_imu_sub[5];
 	ros::Subscriber uavs_gps_sub[5];
@@ -315,11 +319,13 @@ private:
 	ros::Publisher uavs_setpoint_alt_pub[5];	
 	ros::Publisher uavs_gps_home_pub[5];
 	ros::Publisher uavs_move_pub[5];
+	ros::Publisher uavs_gps_rtcm_pub[5];
 	ros::Publisher uavs_pathplan_pub;
 
 	ros::ServiceClient uavs_arming_client[5];
 	ros::ServiceClient uavs_setmode_client[5];
 
+	RTCM gps_rtcm;
 	mavros_msgs::State uavs_state[5];
 	Imu uavs_imu[5];
 	Gpsraw uavs_gps[5];
@@ -332,9 +338,12 @@ private:
 	PosTarg uavs_setpoint[5];
 	AltTarg uavs_setpoint_alt[5];
 	GpsHomePos uavs_gps_home[5]; //origin of gps local
+	outdoor_gcs::ControlCommand Command_List[3];
+	RTCM uavs_gps_rtcm[5];
 	outdoor_gcs::PathPlan uavs_pathplan;
 	outdoor_gcs::PathPlan uavs_pathplan_nxt;
-	
+
+	void rtcm_callback(const RTCM::ConstPtr &msg);
 	void uavs_state_callback(const mavros_msgs::State::ConstPtr &msg, int ind);
 	void uavs_imu_callback(const sensor_msgs::Imu::ConstPtr &msg, int ind);
 	void uavs_gps_callback(const outdoor_gcs::GPSRAW::ConstPtr &msg, int ind);
