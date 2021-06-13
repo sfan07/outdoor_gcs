@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as ptch
-import matplotlib
-from matplotlib import cm
+'''
+Create a package called ros_pathplan
+Git clone the ORCA algorithm (Python-RVO2-3D)
+and append path to the folder
+rosrun ros_pathplan ros_pathplan.py
+'''
+
+# import matplotlib.pyplot as plt
+# import matplotlib.patches as ptch
+# import matplotlib
+# from matplotlib import cm
 import numpy as np
-import math
-import time
-import csv
-from termcolor import colored
+# import math
+# import time
+# import csv
+# from termcolor import colored
 
 import sys  
 sys.path.append('/home/chihunen/catkin_ws/src/ros_pathplan/src/Python-RVO2-3D') 
 import rvo23d
-# # sys.path.insert(0,'..')
-# # from Config import Config
-# from Config_ORCA import Config
-# import benchmark_3D_ORCA
-
-# import os
-# path = os.path.dirname(os.path.realpath('__file__'))
-# address = path + '/ORCA_result' + Config.Data_file
 
 import rospy
 from geometry_msgs.msg import PoseStamped, Twist
@@ -40,18 +39,19 @@ class O_PathPlan(object):
 
         self.start_sim = False
         self.agents_num = 0
+        self.max_agents_num = 5
         self.uavs_id = [False,False,False,False,False]
 
-        self.radius = 0.8
-        self.MaxVelo = 2.0 #10.0
+        self.radius = 1.0
+        self.MaxVelo = 10.0 #10.0
         # self.MaxAcc = 10.0
         # self.d_star = self.radius
         # self.c1 = 7*4.5
         # self.c2 = 9*4.5
         # self.RepulsiveGradient = 7.5*100
-        self.neighborDist, self.timeHorizon, self.velocity = 3.0, 2, (0,0,0)
+        self.neighborDist, self.timeHorizon, self.velocity = 3.0, 5, (0,0,0)
 
-        self.sim = rvo23d.PyRVOSimulator(self.dt, self.neighborDist, self.agents_num,
+        self.sim = rvo23d.PyRVOSimulator(self.dt, self.neighborDist, self.max_agents_num,
                         self.timeHorizon, self.radius, self.MaxVelo, self.velocity)
 
         self.pathplan_pub_msg, self.pathplan_pub_msg_nxt = PathPlan(), PathPlan()
@@ -62,9 +62,10 @@ class O_PathPlan(object):
     def update_nxtpos(self):
         self.pathplan_pub_msg_nxt.header.stamp = rospy.Time.now()
         nxt, j = [], 0
-        for i in range(len(self.uavs_id)):
+        for i in range(self.max_agents_num):
             if (self.uavs_id[i]):
                 nxt.extend([self.sim.getAgentPosition(j)[0], self.sim.getAgentPosition(j)[1], self.sim.getAgentPosition(j)[2]])
+                # print([self.sim.getAgentPosition(j)[0], self.sim.getAgentPosition(j)[1], self.sim.getAgentPosition(j)[2]])
                 j+=1
             else:
                 nxt.extend([0,0,0])
@@ -78,17 +79,24 @@ class O_PathPlan(object):
         if (self.start_sim and rospy.Time.now()-self.change_time > rospy.Duration(secs=5)):
             self.change_time = rospy.Time.now()
             self.pathplan_pub_msg_nxt.start, self.start_sim = False, False
-            for i in range(len(self.uavs_id)):
+            for i in range(self.max_agents_num):
                 # print(self.agents_num, self.sim.getNumAgents())
                 # print(self.sim.getNumAgents())
                 # print('\n')
                 if (self.uavs_id[i] and self.sim.getNumAgents()!=self.agents_num):
-                    self.sim.addAgent((self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]), 
-                        self.neighborDist, self.agents_num, self.timeHorizon, self.radius, self.MaxVelo, self.velocity)
+                    A = self.sim.addAgent((self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]), 
+                        self.neighborDist, self.max_agents_num, self.timeHorizon, self.radius, self.MaxVelo, self.velocity)
+                    # vel = self.des_pos[i*3:i*3+3] - self.cur_pos[i*3:i*3+3]
+                    # nor = np.linalg.norm(vel)
+                    # if nor < 10**-5:
+                    #     prefV[0], prefV[1], prefV[2] = 0.0, 0.0, 0.0
+                    # else:
+                    #     prefV = vel/nor*self.MaxVelo
+                    # self.sim.setAgentPrefVelocity(A, (prefV[0], prefV[1], prefV[2]))
         if (self.agents_num != 0):
             j = 0
             # print(self.sim.getNumAgents())
-            for i in range(len(self.uavs_id)):
+            for i in range(self.max_agents_num):
                 if (self.uavs_id[i]):
                     self.sim.setAgentPosition(j, (self.cur_pos[i*3], self.cur_pos[i*3+1], self.cur_pos[i*3+2]))
                     vel = self.des_pos[i*3:i*3+3] - self.cur_pos[i*3:i*3+3]
@@ -110,10 +118,10 @@ class O_PathPlan(object):
         self.uavs_id = msg.uavs_id
         self.cur_pos = np.asarray(msg.cur_position)
         self.des_pos = np.asarray(msg.des_position)
-        self.timeHorizon = msg.params[0]
-        self.MaxVelo = msg.params[1]
-        self.radius = msg.params[2]
-        self.neighborDist = msg.params[4]
+        # self.timeHorizon = msg.params[0]
+        # self.MaxVelo = msg.params[1]
+        # self.radius = msg.params[2]
+        # self.neighborDist = msg.params[4]
 
 
 if __name__ == '__main__':

@@ -399,7 +399,7 @@ void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
 			UAVs_info[ind].pos_nxt[1] = uavs_pathplan_nxt.nxt_position[ind*3+1];
 			UAVs_info[ind].pos_nxt[2] = uavs_pathplan_nxt.nxt_position[ind*3+2];
 		}
-		if (Plan_Dim[ind] == 5){
+		if (Plan_Dim[ind] == 4){ // 2D ORCA
 			UAVs_info[ind].pos_nxt[2] = UAVs_info[ind].pos_des[2];
 		}
 	}
@@ -670,7 +670,9 @@ void QNode::Update_Flock_Param(float param[6]){
 }
 void QNode::Update_ORCA_Param(float param[4]){
 	for (int i = 0; i < 4; i++) {
-		orca_param[i] = param[i];
+		if (param[i] != 0){
+			orca_param[i] = param[i];
+		}
 	}
 }
 void QNode::Update_PathPlan_Pos(int i, float pos_input[3], bool init_fin){ //True for init, false for final pos

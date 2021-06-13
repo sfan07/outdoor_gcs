@@ -1387,12 +1387,10 @@ void MainWindow::updateInfoLogger(){
                                         ": PP Init Position: X: " + QString::number(UAVs[it].pos_ini[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_ini[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_ini[2], 'f', 3));
-                ui.info_logger->addItem("uav " + QString::number(it+1) + 
-                                        ": PP Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
+                ui.info_logger->addItem("          PP Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_nxt[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_nxt[2], 'f', 3));
-                ui.info_logger->addItem("uav " + QString::number(it+1) + 
-                                        ": PP Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+                ui.info_logger->addItem("          PP Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
             }
