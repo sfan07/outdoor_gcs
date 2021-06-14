@@ -478,6 +478,15 @@ void QNode::move_uavs(int ID, float pos_input[3]) {
 
 void QNode::UAVS_Do_Plan(){
 	for (const auto &host_ind : avail_uavind){
+
+		float dist[3];
+		dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+		dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+		dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+		if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+			UAVs_info[host_ind].arrive = true;
+		} else{ UAVs_info[host_ind].arrive = false; }
+
 		if (!Move[host_ind]){ continue; }
 		else{
 			if (Plan_Dim[host_ind] == 0){
@@ -654,6 +663,9 @@ void QNode::Update_PathPlan(){
 		uavs_pathplan.nxt_position[3*it+0] = UAVs_info[it].pos_nxt[0];
 		uavs_pathplan.nxt_position[3*it+1] = UAVs_info[it].pos_nxt[1];
 		uavs_pathplan.nxt_position[3*it+2] = UAVs_info[it].pos_nxt[2];
+		if (Plan_Dim[it] == 4){ // 2D ORCA, assume uavs at same height of 3.0
+			uavs_pathplan.cur_position[3*it+2] = 3.0;
+		}
 	}
 	for (int i = 0; i < 4; i++) {
 		uavs_pathplan.params[i] = orca_param[i];

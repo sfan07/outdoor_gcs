@@ -145,6 +145,11 @@ private:
 	std::list<int> avail_uavind;
 	int origin_ind;
 	// bool continue_offboard;
+	int init_fin = 0; // 0:none, 1: go init pos, 2: go fin pos
+	bool all_arrive = false;
+	ros::Time start_time;
+	ros::Time arrive_time;
+
 	outdoor_gcs::uav_info UAVs[5];
 	QStringList UAV_Detected;
 	QStringList UAV_Info_Logger;

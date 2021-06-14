@@ -121,6 +121,7 @@ namespace outdoor_gcs {
 		bool pregpsReceived = false;
 		bool pregpsLReceived = false;
 		bool move = false;
+		bool arrive = false;
 	};
 
 	struct checkbox_status
@@ -281,7 +282,7 @@ private:
 	float max_acc = 10.0;
 	float max_vel = 10.0;
 	
-	float orca_param[4] = {2.0, 2.0, 0.8, 3.0}; // tau, pref_v, r, Neighbor Dist
+	float orca_param[4] = {5.0, 10.0, 1.0, 3.0}; // tau, max_v, r, Neighbor Dist
 
 	// Square & circle 
 	float sc_size;
@@ -338,7 +339,7 @@ private:
 	PosTarg uavs_setpoint[5];
 	AltTarg uavs_setpoint_alt[5];
 	GpsHomePos uavs_gps_home[5]; //origin of gps local
-	outdoor_gcs::ControlCommand Command_List[3];
+	outdoor_gcs::ControlCommand Command_List[5];
 	RTCM uavs_gps_rtcm[5];
 	outdoor_gcs::PathPlan uavs_pathplan;
 	outdoor_gcs::PathPlan uavs_pathplan_nxt;

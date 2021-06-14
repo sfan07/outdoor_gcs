@@ -500,10 +500,10 @@ void MainWindow::on_Button_Set_Select_clicked(bool check){
         target_state[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-        if(target_state[0] < -10.0 || target_state[0] > 10.0) {
+        if(target_state[0] < -20.0 || target_state[0] > 20.0) {
             input_is_valid = false;
         }
-        if(target_state[1] < -10.0 || target_state[1] > 10.0) {
+        if(target_state[1] < -20.0 || target_state[1] > 20.0) {
             input_is_valid = false;
         }
         if(target_state[2] < -1.20 || target_state[2] > 30.0) {
@@ -821,10 +821,10 @@ void MainWindow::on_Button_SetInit_clicked(bool check){
         pathplan_pos[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-        if(pathplan_pos[0] < -10.0 || pathplan_pos[0] > 10.0) {
+        if(pathplan_pos[0] < -20.0 || pathplan_pos[0] > 20.0) {
             input_is_valid = false;
         }
-        if(pathplan_pos[1] < -10.0 || pathplan_pos[1] > 10.0) {
+        if(pathplan_pos[1] < -20.0 || pathplan_pos[1] > 20.0) {
             input_is_valid = false;
         }
         if(pathplan_pos[2] < -1.20 || pathplan_pos[2] > 30.0) {
@@ -865,10 +865,10 @@ void MainWindow::on_Button_SetFin_clicked(bool check){
         pathplan_pos[2] =  ui.z_input_all->text().toFloat();
         /*----------------determine whether the input is in safe range ------------------*/
         bool input_is_valid = true;
-        if(pathplan_pos[0] < -10.0 || pathplan_pos[0] > 10.0) {
+        if(pathplan_pos[0] < -20.0 || pathplan_pos[0] > 20.0) {
             input_is_valid = false;
         }
-        if(pathplan_pos[1] < -10.0 || pathplan_pos[1] > 10.0) {
+        if(pathplan_pos[1] < -20.0 || pathplan_pos[1] > 20.0) {
             input_is_valid = false;
         }
         if(pathplan_pos[2] < -1.20 || pathplan_pos[2] > 30.0) {
@@ -899,6 +899,9 @@ void MainWindow::on_Button_SetFin_clicked(bool check){
     }
 }
 void MainWindow::on_Button_GoInit_clicked(bool check){
+    all_arrive = false;
+    start_time = ros::Time::now();
+    init_fin = 1;
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
@@ -917,6 +920,9 @@ void MainWindow::on_Button_GoInit_clicked(bool check){
     }
 }
 void MainWindow::on_Button_GoFin_clicked(bool check){
+    all_arrive = false;
+    start_time = ros::Time::now();
+    init_fin = 2;
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();
         for (const auto &i : avail_uavind){
@@ -935,6 +941,9 @@ void MainWindow::on_Button_GoFin_clicked(bool check){
     }
 }
 void MainWindow::on_Button_GoInit_ALL_clicked(bool check){
+    all_arrive = false;
+    start_time = ros::Time::now();
+    init_fin = 1;
     for (const auto &i : avail_uavind){
         qnode.Update_PathPlan_Des(i, true);
     }
@@ -943,6 +952,9 @@ void MainWindow::on_Button_GoInit_ALL_clicked(bool check){
     ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
 }
 void MainWindow::on_Button_GoFin_ALL_clicked(bool check){
+    all_arrive = false;
+    start_time = ros::Time::now();
+    init_fin = 2;
     for (const auto &i : avail_uavind){
         qnode.Update_PathPlan_Des(i, false);
     }
@@ -1166,12 +1178,15 @@ void MainWindow::updateuavs(){
     }
     ui.notice_logger->scrollToBottom();
 
+    all_arrive = true;
     for (const auto &i : avail_uavind){
         UAVs[i] = qnode.Get_UAV_info(i);
+        if (!UAVs[i].arrive){ all_arrive = false; }
         // if (ui.checkBox_Offboard -> isChecked()){
 	    //     qnode.Set_Mode_uavs("OFFBOARD", i);
         // }
     }
+    if (!all_arrive){ arrive_time = ros::Time::now(); }
 }
 
 void MainWindow::updateInfoLogger(){
@@ -1183,6 +1198,16 @@ void MainWindow::updateInfoLogger(){
     ui.info_logger->item(item_index)->setForeground(Qt::white);
     ui.info_logger->item(item_index)->setBackground(Qt::black);
     if (checkbox_stat.print_pathplan){
+        QString word_to_be_print = "Go ";
+        if (init_fin == 1){ word_to_be_print += "Init! "; } 
+        else if (init_fin == 2){ word_to_be_print += "Final! "; } 
+        else {word_to_be_print += "-- ";}
+        if (all_arrive) {word_to_be_print += "Arrived! "; }
+        else {word_to_be_print += "On the way! "; }
+        word_to_be_print += "Time: ";
+        word_to_be_print += QString::number(arrive_time.toSec() - start_time.toSec(), 'f', 1);
+        ui.info_logger->addItem(word_to_be_print);
+
         ui.info_logger->addItem("Flock Param: c1: " + QString::number(qnode.GetFlockParam(0), 'f', 1) +
                                 ", c2: " + QString::number(qnode.GetFlockParam(1), 'f', 1) + 
                                 ", rho: " + QString::number(qnode.GetFlockParam(2), 'f', 1));
@@ -1355,8 +1380,11 @@ void MainWindow::updateInfoLogger(){
                 // ui.info_logger->addItem("Local Velocity: X: " + QString::number(UAVs[it].vel_cur[0], 'f', 3) +
                 //                         ". Y: " + QString::number(UAVs[it].vel_cur[1], 'f', 3) +
                 //                         ". Z: " + QString::number(UAVs[it].vel_cur[2], 'f', 3));
+                int item_index = ui.info_logger->count()-1;
+                if (UAVs[it].arrive){
+                    ui.info_logger->item(item_index)->setForeground(Qt::darkGreen);
+                }
                 if (!UAVs[it].gpsLReceived){
-                    int item_index = ui.info_logger->count()-1;
                     // int item_index2 = ui.info_logger->count()-2;
                     ui.info_logger->item(item_index)->setForeground(Qt::red);
                     // ui.info_logger->item(item_index2)->setForeground(Qt::red);
@@ -1387,10 +1415,10 @@ void MainWindow::updateInfoLogger(){
                                         ": PP Init Position: X: " + QString::number(UAVs[it].pos_ini[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_ini[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_ini[2], 'f', 3));
-                ui.info_logger->addItem("          PP Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
+                ui.info_logger->addItem("           PP Next Position: X: " + QString::number(UAVs[it].pos_nxt[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_nxt[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_nxt[2], 'f', 3));
-                ui.info_logger->addItem("          PP Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+                ui.info_logger->addItem("           PP Final Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
                                         ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) +
                                         ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
             }
