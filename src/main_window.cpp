@@ -405,6 +405,24 @@ void MainWindow::on_Update_UAV_List_clicked(bool check){
     ui.notice_logger->addItem(QTime::currentTime().toString() + " : Available uav list updated!");
 }
 
+void MainWindow::on_px4_apm_clicked(bool check){
+    if (px4_apm){
+        px4_apm = false;
+        qnode.Update_px4_apm(false);
+        ui.px4_apm->setText("px4");
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : APM !!!! ");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+    } else{
+        px4_apm = true;
+        qnode.Update_px4_apm(true);
+        ui.px4_apm->setText("apm");
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : PX4 !!!! ");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::darkGreen);
+    }
+}
+
 void MainWindow::on_Set_GPS_Origin_clicked(bool check){
     if (ui.uav_detect_logger->selectedItems().count()!=0){
         QList<QListWidgetItem *> selected_uav = ui.uav_detect_logger->selectedItems();

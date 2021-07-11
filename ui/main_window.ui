@@ -1452,7 +1452,7 @@
         <widget class="QCheckBox" name="checkBox_rtcm">
          <property name="geometry">
           <rect>
-           <x>200</x>
+           <x>190</x>
            <y>5</y>
            <width>71</width>
            <height>16</height>
@@ -1874,6 +1874,19 @@
            <string>Stop ONE</string>
           </property>
          </widget>
+        </widget>
+        <widget class="QPushButton" name="px4_apm">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>51</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>apm</string>
+         </property>
         </widget>
        </widget>
        <widget class="QListWidget" name="notice_logger">

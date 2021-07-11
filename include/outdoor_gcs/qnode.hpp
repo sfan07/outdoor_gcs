@@ -203,6 +203,7 @@ public:
 	void Update_ORCA_Param(float param[4]);
 	void Update_PathPlan_Pos(int i, float pos_input[3], bool init_fin);
 	void Update_PathPlan_Des(int i, bool init_fin);
+	void Update_px4_apm(bool TF);
 
 	State GetState_uavs(int ind);
 	Imu GetImu_uavs(int ind);
@@ -298,6 +299,8 @@ private:
 	outdoor_gcs::uav_info UAVs_info[5];
 	std::list<int> avail_uavind;
 	int service_flag[5];
+	bool px4_apm = true; // true: px4, false: apm
+	int apm_landtoff[5]; // 1: land, 2: takeoff
 	bool pub_move_flag[5];
 	bool pub_home_flag[5];
 	bool pub_rtcm_flag;
@@ -326,6 +329,10 @@ private:
 	ros::ServiceClient uavs_arming_client[5];
 	ros::ServiceClient uavs_setmode_client[5];
 
+	// APM (ardupilot)
+	ros::ServiceClient uavs_apm_land_client[5];
+	ros::ServiceClient uavs_apm_toff_client[5];
+
 	RTCM gps_rtcm;
 	mavros_msgs::State uavs_state[5];
 	Imu uavs_imu[5];
@@ -338,6 +345,7 @@ private:
 	mavros_msgs::SetMode uavs_setmode[5];
 	PosTarg uavs_setpoint[5];
 	AltTarg uavs_setpoint_alt[5];
+	mavros_msgs::CommandTOL uavs_apm_landtoff[5];
 	GpsHomePos uavs_gps_home[5]; //origin of gps local
 	outdoor_gcs::ControlCommand Command_List[5];
 	RTCM uavs_gps_rtcm[5];

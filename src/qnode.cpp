@@ -84,6 +84,11 @@ bool QNode::init() {
 
 		uavs_arming_client[i] 	= n.serviceClient<mavros_msgs::CommandBool>("/uav" + std::to_string(i+1) +"/mavros/cmd/arming");
 		uavs_setmode_client[i] 	= n.serviceClient<mavros_msgs::SetMode>("/uav" + std::to_string(i+1) +"/mavros/set_mode");
+
+		// APM
+		uavs_apm_land_client[i] 	= n.serviceClient<mavros_msgs::CommandTOL>("/uav" + std::to_string(i+1) +"/mavros/cmd/land");
+		uavs_apm_toff_client[i] 	= n.serviceClient<mavros_msgs::CommandTOL>("/uav" + std::to_string(i+1) +"/mavros/cmd/takeoff");
+
 	}
 	uavs_pathplan_sub = n.subscribe<outdoor_gcs::PathPlan>("/uavs/pathplan_nxt",1, &QNode::uavs_pathplan_callback, this);
 	uavs_pathplan_pub = n.advertise<outdoor_gcs::PathPlan>("/uavs/pathplan",1);
@@ -322,7 +327,15 @@ void QNode::uavs_call_service(){
 			service_flag[ind] = 0;
 		}
 		else if (service_flag[ind] == 2){ // set mode (AUTO.TAKEOFF, AUTO.LAUBD, OFFBOARD ... etc)
-			uavs_setmode_client[ind].call(uavs_setmode[ind]);
+			if (!px4_apm && apm_landtoff[ind]!=0){
+				if (apm_landtoff[ind] == 1){
+					uavs_apm_land_client[ind].call(uavs_apm_landtoff[ind]); 
+				} else if (apm_landtoff[ind] == 2){
+					uavs_apm_toff_client[ind].call(uavs_apm_landtoff[ind]); 
+				}
+			} else{
+				uavs_setmode_client[ind].call(uavs_setmode[ind]);
+			}
 			service_flag[ind] = 0;
 		}
 	}
@@ -413,6 +426,26 @@ void QNode::Set_Arm_uavs(bool arm_disarm, int ind){
 
 void QNode::Set_Mode_uavs(std::string command_mode, int ind){
 	uavs_setmode[ind].request.custom_mode = command_mode;
+	if (!px4_apm){
+		apm_landtoff[ind] = 0;
+		if (command_mode == "AUTO.LAND"){
+			apm_landtoff[ind] = 1;
+			uavs_apm_landtoff[ind].request.min_pitch = 0.0;
+			uavs_apm_landtoff[ind].request.yaw = 0.0;
+			uavs_apm_landtoff[ind].request.latitude = uavs_gpsG[ind].latitude;
+			uavs_apm_landtoff[ind].request.longitude = uavs_gpsG[ind].longitude;
+			uavs_apm_landtoff[ind].request.altitude = 0.0;
+		} else if (command_mode == "AUTO.TAKEOFF"){
+			apm_landtoff[ind] = 2;
+			uavs_apm_landtoff[ind].request.min_pitch = 0.0;
+			uavs_apm_landtoff[ind].request.yaw = 0.0;
+			uavs_apm_landtoff[ind].request.latitude = uavs_gpsG[ind].latitude;
+			uavs_apm_landtoff[ind].request.longitude = uavs_gpsG[ind].longitude;
+			uavs_apm_landtoff[ind].request.altitude = uavs_gpsG[ind].altitude + 2.5;
+		} else if (command_mode == "OFFBOARD"){
+			uavs_setmode[ind].request.custom_mode = "GUIDED";
+		}
+	}
 	service_flag[ind] = 2;
 }
 void QNode::Set_GPS_Home_uavs(int host_ind, int origin_ind){
@@ -709,7 +742,9 @@ void QNode::Update_PathPlan_Des(int i, bool init_fin){ //True for init, false fo
 		UAVs_info[i].pos_des[2] = UAVs_info[i].pos_fin[2];
 	}
 }
-
+void QNode::Update_px4_apm(bool TF){
+	px4_apm = TF;
+}
 
 State QNode::GetState_uavs(int ind){
 	return uavs_state[ind];

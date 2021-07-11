@@ -68,6 +68,7 @@ public Q_SLOTS:
 
 	////////////////////// Multi-uav ////////////////////////////
 	void on_Update_UAV_List_clicked(bool check);
+	void on_px4_apm_clicked(bool check);
 	void on_Set_GPS_Origin_clicked(bool check);
 	void on_Button_GetCur_Select_clicked(bool check);
 	void on_Button_GetDes_Select_clicked(bool check);
@@ -145,6 +146,7 @@ private:
 	std::list<int> avail_uavind;
 	int origin_ind;
 	// bool continue_offboard;
+	bool px4_apm = true; // true: px4, false: apm
 	int init_fin = 0; // 0:none, 1: go init pos, 2: go fin pos
 	bool all_arrive = false;
 	ros::Time start_time;
