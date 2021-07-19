@@ -276,14 +276,15 @@ private:
 	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 5 for ORCA, 10 for square, 11 for circle
 	
 	// Flocking params
-	float c1 = 10.0; //7.0;
-	float c2 = 10.0; //9.0;
-	float RepulsiveGradient = 50; //7.5*std::pow(10,6);
-	float r_alpha = 3.0;
-	float max_acc = 10.0;
-	float max_vel = 10.0;
+	// float c1 = 10.0; //7.0;
+	// float c2 = 10.0; //9.0;
+	// float RepulsiveGradient = 50; //7.5*std::pow(10,6);
+	// float r_alpha = 3.0;
+	// float max_acc = 10.0;
+	// float max_vel = 10.0;
 	
 	float orca_param[4] = {5.0, 10.0, 1.0, 3.0}; // tau, max_v, r, Neighbor Dist
+	float flock_param[6] = {10.0, 10.0, 50.0, 3.0, 10.0, 10.0}; // c1, c2, RepulsiveGradient, r_alpha, max_acc, max_vel
 
 	// Square & circle 
 	float sc_size;
@@ -294,6 +295,7 @@ private:
 	int path_i = 0;
 	float centers[5][3];
 	bool start_path = false;
+	bool pathplan = false;
 
 	int DroneNumber = 5;
 	outdoor_gcs::uav_info UAVs_info[5];

@@ -2089,7 +2089,7 @@
               <rect>
                <x>60</x>
                <y>0</y>
-               <width>61</width>
+               <width>41</width>
                <height>16</height>
               </rect>
              </property>
@@ -2097,6 +2097,32 @@
               <string>3D</string>
              </property>
             </widget>
+            <widget class="QCheckBox" name="checkBox_Flock_DW2">
+             <property name="geometry">
+              <rect>
+               <x>110</x>
+               <y>0</y>
+               <width>61</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>DW2</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QCheckBox" name="checkBox_Flock_DW3">
+            <property name="geometry">
+             <rect>
+              <x>170</x>
+              <y>0</y>
+              <width>61</width>
+              <height>16</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>DW3</string>
+            </property>
            </widget>
           </widget>
           <widget class="QWidget" name="tab_2">

@@ -109,6 +109,8 @@ public Q_SLOTS:
 	void on_checkBox_circle_stateChanged(int);
 	void on_checkBox_Flock_2D_stateChanged(int);
 	void on_checkBox_Flock_3D_stateChanged(int);
+	void on_checkBox_Flock_DW2_stateChanged(int);
+	void on_checkBox_Flock_DW3_stateChanged(int);
 	void on_checkBox_ORCA_2D_stateChanged(int);
 	void on_checkBox_ORCA_3D_stateChanged(int);
 	void on_checkBox_PPPrint_stateChanged(int);

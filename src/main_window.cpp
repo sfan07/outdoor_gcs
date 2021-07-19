@@ -1097,6 +1097,36 @@ void MainWindow::on_checkBox_Flock_3D_stateChanged(int){
         qnode.Update_Planning_Dim(99, 0);
     }
 }
+void MainWindow::on_checkBox_Flock_DW2_stateChanged(int){
+    if (ui.checkBox_Flock_DW2 -> isChecked()){
+        ui.checkBox_Flock_2D -> setChecked(false);
+        ui.checkBox_Flock_3D -> setChecked(false);
+        ui.checkBox_Flock_DW3 -> setChecked(false);
+        ui.checkBox_ORCA_2D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 6);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Planning with Downwash 2D Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
+void MainWindow::on_checkBox_Flock_DW3_stateChanged(int){
+    if (ui.checkBox_Flock_DW3 -> isChecked()){
+        ui.checkBox_Flock_2D -> setChecked(false);
+        ui.checkBox_Flock_3D -> setChecked(false);
+        ui.checkBox_Flock_DW2 -> setChecked(false);
+        ui.checkBox_ORCA_2D -> setChecked(false);
+        ui.checkBox_ORCA_3D -> setChecked(false);
+        qnode.Update_Planning_Dim(99, 7);
+        ui.notice_logger->addItem(QTime::currentTime().toString() + " : Flock Planning with Downwash 3D Set!");
+        int item_index = ui.notice_logger->count()-1;
+        ui.notice_logger->item(item_index)->setForeground(Qt::blue);
+    }else{
+        qnode.Update_Planning_Dim(99, 0);
+    }
+}
 void MainWindow::on_checkBox_ORCA_2D_stateChanged(int){
     if (ui.checkBox_ORCA_2D -> isChecked()){
         ui.checkBox_Flock_2D -> setChecked(false);

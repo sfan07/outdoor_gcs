@@ -359,7 +359,9 @@ void QNode::uavs_pub_command(){
 			uavs_gps_rtcm[ind].header.seq += 1;
         	uavs_gps_rtcm_pub[ind].publish(uavs_gps_rtcm[ind]);
 		}
-		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 5){ pathplan_flag=true; }
+		if (pathplan){
+			pathplan_flag=true;
+		}
 	}
 	if (pathplan_flag){	
 		Update_PathPlan();
@@ -407,12 +409,12 @@ void QNode::uavs_log_callback(const outdoor_gcs::Topic_for_log::ConstPtr &msg, i
 void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
 	uavs_pathplan_nxt = *msg;
 	for (const auto &ind : avail_uavind){
-		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 5){
+		if (pathplan){
 			UAVs_info[ind].pos_nxt[0] = uavs_pathplan_nxt.nxt_position[ind*3+0];
 			UAVs_info[ind].pos_nxt[1] = uavs_pathplan_nxt.nxt_position[ind*3+1];
 			UAVs_info[ind].pos_nxt[2] = uavs_pathplan_nxt.nxt_position[ind*3+2];
 		}
-		if (Plan_Dim[ind] == 4){ // 2D ORCA
+		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 6){ // 2D ORCA & 2D DW
 			UAVs_info[ind].pos_nxt[2] = UAVs_info[ind].pos_des[2];
 		}
 	}
@@ -527,21 +529,21 @@ void QNode::UAVS_Do_Plan(){
 			}
 			else if (Plan_Dim[host_ind] == 2){ // 2D Flock
 				float force[2];
-				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
-				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
+				force[0] = -flock_param[0]*(UAVs_info[host_ind].vel_cur[0])-flock_param[1]*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
+				force[1] = -flock_param[0]*(UAVs_info[host_ind].vel_cur[1])-flock_param[1]*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
 				for (const auto &other_ind : avail_uavind){
 					float dist_v[2] = {	UAVs_info[host_ind].pos_cur[0]-UAVs_info[other_ind].pos_cur[0],
 										UAVs_info[host_ind].pos_cur[1]-UAVs_info[other_ind].pos_cur[1]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2), 0.5);
-					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
+					if (host_ind != other_ind && dist < flock_param[3]){
+						float ForceComponent = flock_param[2]*std::pow(dist - flock_param[3], 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 					}
 				}
 				for (int i = 0; i < 2; i++) {
-					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
-					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					force[i] = std::min(std::max(force[i], -flock_param[4]), flock_param[4]);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -flock_param[5]), flock_param[5]);
 					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					// std::cout << pos_input[i] << std::endl;
 					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
@@ -551,32 +553,34 @@ void QNode::UAVS_Do_Plan(){
 			}
 			else if (Plan_Dim[host_ind] == 3){ // 3D Flock
 				float force[3];
-				force[0] = -c1*(UAVs_info[host_ind].vel_cur[0])-c2*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
-				force[1] = -c1*(UAVs_info[host_ind].vel_cur[1])-c2*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
-				force[2] = -c1*(UAVs_info[host_ind].vel_cur[2])-c2*(UAVs_info[host_ind].pos_cur[2]-UAVs_info[host_ind].pos_des[2]);
+				force[0] = -flock_param[0]*(UAVs_info[host_ind].vel_cur[0])-flock_param[1]*(UAVs_info[host_ind].pos_cur[0]-UAVs_info[host_ind].pos_des[0]);
+				force[1] = -flock_param[0]*(UAVs_info[host_ind].vel_cur[1])-flock_param[1]*(UAVs_info[host_ind].pos_cur[1]-UAVs_info[host_ind].pos_des[1]);
+				force[2] = -flock_param[0]*(UAVs_info[host_ind].vel_cur[2])-flock_param[1]*(UAVs_info[host_ind].pos_cur[2]-UAVs_info[host_ind].pos_des[2]);
 				for (const auto &other_ind : avail_uavind){
 					float dist_v[3] = {	UAVs_info[host_ind].pos_cur[0]-UAVs_info[other_ind].pos_cur[0],
 										UAVs_info[host_ind].pos_cur[1]-UAVs_info[other_ind].pos_cur[1],
 										UAVs_info[host_ind].pos_cur[2]-UAVs_info[other_ind].pos_cur[2]};
 					float dist = std::pow(std::pow(dist_v[0],2) + std::pow(dist_v[1], 2) + std::pow(dist_v[2], 2), 0.5);
-					if (host_ind != other_ind && dist < r_alpha){
-						float ForceComponent = RepulsiveGradient*std::pow(dist - r_alpha, 2);
+					if (host_ind != other_ind && dist < flock_param[3]){
+						float ForceComponent = flock_param[2]*std::pow(dist - flock_param[3], 2);
 						force[0] += ForceComponent*(dist_v[0]/dist);
 						force[1] += ForceComponent*(dist_v[1]/dist);
 						force[2] += ForceComponent*(dist_v[2]/dist);
 					}
 				}
 				for (int i = 0; i < 3; i++) {
-					force[i] = std::min(std::max(force[i], -max_acc), max_acc);
-					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -max_vel), max_vel);
+					force[i] = std::min(std::max(force[i], -flock_param[4]), flock_param[4]);
+					float vel = std::min(std::max(UAVs_info[host_ind].vel_cur[i] + force[i]*dt, -flock_param[5]), flock_param[5]);
 					UAVs_info[host_ind].pos_nxt[i] = UAVs_info[host_ind].pos_cur[i] + vel*dt;
 					// std::cout << pos_input[i] << std::endl;
 					// std::cout << UAVs_info[host_ind].pos_des[i] << std::endl;
 				}
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
-			else if (Plan_Dim[host_ind] == 4 || Plan_Dim[host_ind] == 5){ //2D & 3D ORCA
-				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
+			else if (pathplan){ //2D & 3D ORCA & DW Flock
+				if (UAVs_info[host_ind].pos_nxt[0]!=0 && UAVs_info[host_ind].pos_nxt[1]!=0 && UAVs_info[host_ind].pos_nxt[2]!=0){
+					move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
+				}
 			}
 			else if (Plan_Dim[host_ind] == 10){ //Square path
 				if (sc_time == 0){
@@ -673,7 +677,7 @@ void QNode::Update_Move(int i, bool move){
 	UAVs_info[i].move = move;
 }
 void QNode::Update_Planning_Dim(int host_ind, int i){
-	// 0 for no planning, 2 for 2D, 3 for 3D, 4 for ORCA, 10 for square, 11 for circle
+	// 0 for no planning, 2/3 for 2D/3D flock, 4/5 for 2D/3D ORCA, 6/7 for 2D/3D DW Flock, 10 for square, 11 for circle
 	if (host_ind==99){
     	for (const auto &it : avail_uavind){
 			Plan_Dim[it] = i;
@@ -682,7 +686,12 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	
 	start_path = false;
 	// start_path = true;
-	if (i==4 || i==5){uavs_pathplan.start = true;}
+	if (i==4 || i==5 || i==6 || i==7){
+		pathplan = true;
+		uavs_pathplan.start = true;
+	} else{
+		pathplan = false;
+	}
 }
 void QNode::Update_PathPlan(){
 	for (const auto &it : avail_uavind){
@@ -696,27 +705,37 @@ void QNode::Update_PathPlan(){
 		uavs_pathplan.nxt_position[3*it+0] = UAVs_info[it].pos_nxt[0];
 		uavs_pathplan.nxt_position[3*it+1] = UAVs_info[it].pos_nxt[1];
 		uavs_pathplan.nxt_position[3*it+2] = UAVs_info[it].pos_nxt[2];
+		uavs_pathplan.cur_velocity[3*it+0] = UAVs_info[it].vel_cur[0];
+		uavs_pathplan.cur_velocity[3*it+1] = UAVs_info[it].vel_cur[1];
+		uavs_pathplan.cur_velocity[3*it+2] = UAVs_info[it].vel_cur[2];
 		if (Plan_Dim[it] == 4){ // 2D ORCA, assume uavs at same height of 3.0
 			uavs_pathplan.cur_position[3*it+2] = 3.0;
 		}
 	}
-	for (int i = 0; i < 4; i++) {
-		uavs_pathplan.params[i] = orca_param[i];
-	}
+	// for (int i = 0; i < 4; i++) {
+	// 	uavs_pathplan.params[i] = orca_param[i];
+	// }
 	uavs_pathplan.num = avail_uavind.size();
 }
 void QNode::Update_Flock_Param(float param[6]){
-	if (param[0] != 0){	c1=param[0]; }
-	if (param[1] != 0){	c2=param[1]; }
-	if (param[2] != 0){	RepulsiveGradient=param[2]; }
-	if (param[3] != 0){	r_alpha=param[3]; }
-	if (param[4] != 0){	max_acc=param[4]; }
-	if (param[5] != 0){	max_vel=param[5]; }
+	// if (param[0] != 0){	c1=param[0]; }
+	// if (param[1] != 0){	c2=param[1]; }
+	// if (param[2] != 0){	RepulsiveGradient=param[2]; }
+	// if (param[3] != 0){	r_alpha=param[3]; }
+	// if (param[4] != 0){	max_acc=param[4]; }
+	// if (param[5] != 0){	max_vel=param[5]; }
+	for (int i = 0; i < 6; i++) {
+		if (param[i] != 0){
+			uavs_pathplan.params[i] = param[i];
+			flock_param[i] = param[i];
+		}
+	}
 }
 void QNode::Update_ORCA_Param(float param[4]){
 	for (int i = 0; i < 4; i++) {
 		if (param[i] != 0){
-			orca_param[i] = param[i];
+			uavs_pathplan.params[i] = param[i];
+			// orca_param[i] = param[i];
 		}
 	}
 }
@@ -769,12 +788,14 @@ outdoor_gcs::Topic_for_log  QNode::GetLog_uavs(int ind){
 	return uavs_log[ind];
 }
 float QNode::GetFlockParam(int i){
-	if (i == 0){return c1;}
-	else if (i == 1){return c2;}
-	else if (i == 2){return RepulsiveGradient;}
-	else if (i == 3){return r_alpha;}
-	else if (i == 4){return max_acc;}
-	else if (i == 5){return max_vel;}
+	return flock_param[i];
+
+	// if (i == 0){return c1;}
+	// else if (i == 1){return c2;}
+	// else if (i == 2){return RepulsiveGradient;}
+	// else if (i == 3){return r_alpha;}
+	// else if (i == 4){return max_acc;}
+	// else if (i == 5){return max_vel;}
 }
 float QNode::GetORCAParam(int i){
 	return orca_param[i];
