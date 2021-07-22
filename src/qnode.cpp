@@ -694,6 +694,7 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	}
 }
 void QNode::Update_PathPlan(){
+	uavs_pathplan.header.stamp = ros::Time::now();
 	for (const auto &it : avail_uavind){
 		uavs_pathplan.uavs_id[it] = true;
 		uavs_pathplan.cur_position[3*it+0] = UAVs_info[it].pos_cur[0];
