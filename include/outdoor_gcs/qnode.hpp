@@ -273,7 +273,7 @@ private:
 	float dt = 0.25;
 	ros::Time last_change;
 	
-	int Plan_Dim[5]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 5 for ORCA, 10 for square, 11 for circle
+	int Plan_Dim[9]; // 0 for move wo planning, 2 for 2DFlock, 3 for 3DFlock, 4 9 for ORCA, 10 for square, 11 for circle
 	
 	// Flocking params
 	// float c1 = 10.0; //7.0;
@@ -289,68 +289,68 @@ private:
 	// Square & circle 
 	float sc_size;
 	float sc_time;
-	float sq_corners[5][5][2]; // 5 uavs, 4+1 conrners (extra one for coding simplicity purpose), 2D: xy
+	float sq_corners[9][5][2]; // 5 uavs, 4+1 conrners (extra one for coding simplicity purpose), 2D: xy
 	float square_x[8] = {2, 2, 2, 0, -2, -2, -2, 0}; 
 	float square_y[8] = {2, 0, -2, -2, -2, 0, 2, 2};
 	int path_i = 0;
-	float centers[5][3];
+	float centers[9][3];
 	bool start_path = false;
 	bool pathplan = false;
 
-	int DroneNumber = 5;
-	outdoor_gcs::uav_info UAVs_info[5];
+	int DroneNumber = 9;
+	outdoor_gcs::uav_info UAVs_info[9];
 	std::list<int> avail_uavind;
-	int service_flag[5];
+	int service_flag[9];
 	bool px4_apm = true; // true: px4, false: apm
-	int apm_landtoff[5]; // 1: land, 2: takeoff
-	bool pub_move_flag[5];
-	bool pub_home_flag[5];
+	int apm_landtoff[9]; // 1: land, 2: takeoff
+	bool pub_move_flag[9];
+	bool pub_home_flag[9];
 	bool pub_rtcm_flag;
 	bool received_rtcm;
-	bool Move[5]; // default false
+	bool Move[9]; // default false
 
     int comid = 1;
 
 	ros::Subscriber ntrip_rtcm;
-	ros::Subscriber uavs_state_sub[5];
-	ros::Subscriber uavs_imu_sub[5];
-	ros::Subscriber uavs_gps_sub[5];
-	ros::Subscriber uavs_gpsG_sub[5];
-	ros::Subscriber uavs_gpsL_sub[5];
-	ros::Subscriber uavs_from_sub[5];
-	ros::Subscriber uavs_log_sub[5];
+	ros::Subscriber uavs_state_sub[9];
+	ros::Subscriber uavs_imu_sub[9];
+	ros::Subscriber uavs_gps_sub[9];
+	ros::Subscriber uavs_gpsG_sub[9];
+	ros::Subscriber uavs_gpsL_sub[9];
+	ros::Subscriber uavs_from_sub[9];
+	ros::Subscriber uavs_log_sub[9];
 	ros::Subscriber uavs_pathplan_sub;
 
-	ros::Publisher uavs_setpoint_pub[5];
-	ros::Publisher uavs_setpoint_alt_pub[5];	
-	ros::Publisher uavs_gps_home_pub[5];
-	ros::Publisher uavs_move_pub[5];
-	ros::Publisher uavs_gps_rtcm_pub[5];
+	ros::Publisher uavs_setpoint_pub[9];
+	ros::Publisher uavs_setpoint_alt_pub[9];	
+	ros::Publisher uavs_gps_home_pub[9];
+	ros::Publisher uavs_move_pub[9];
+	ros::Publisher uavs_gps_rtcm_pub[9];
 	ros::Publisher uavs_pathplan_pub;
 
-	ros::ServiceClient uavs_arming_client[5];
-	ros::ServiceClient uavs_setmode_client[5];
+	ros::ServiceClient uavs_arming_client[9];
+	ros::ServiceClient uavs_setmode_client[9];
 
 	// APM (ardupilot)
-	ros::ServiceClient uavs_apm_land_client[5];
-	ros::ServiceClient uavs_apm_toff_client[5];
+	ros::ServiceClient uavs_apm_land_client[9];
+	ros::ServiceClient uavs_apm_toff_client[9];
 
 	RTCM gps_rtcm;
-	mavros_msgs::State uavs_state[5];
-	Imu uavs_imu[5];
-	Gpsraw uavs_gps[5];
-	Gpsglobal uavs_gpsG[5];
-	Gpslocal uavs_gpsL[5];
-	mavros_msgs::Mavlink uavs_from[5];
-	outdoor_gcs::Topic_for_log uavs_log[5];
-	mavros_msgs::CommandBool uavs_arm[5];
-	mavros_msgs::SetMode uavs_setmode[5];
-	PosTarg uavs_setpoint[5];
-	AltTarg uavs_setpoint_alt[5];
-	mavros_msgs::CommandTOL uavs_apm_landtoff[5];
-	GpsHomePos uavs_gps_home[5]; //origin of gps local
-	outdoor_gcs::ControlCommand Command_List[5];
-	RTCM uavs_gps_rtcm[5];
+	mavros_msgs::State uavs_state[9];
+	Imu uavs_imu[9];
+	Gpsraw uavs_gps[9];
+	Gpsglobal uavs_gpsG[9];
+	Gpslocal uavs_gpsL[9];
+	mavros_msgs::Mavlink uavs_from[9];
+	outdoor_gcs::Topic_for_log uavs_log[9];
+	mavros_msgs::CommandBool uavs_arm[9];
+	mavros_msgs::SetMode uavs_setmode[9];
+	PosTarg uavs_setpoint[9];
+	AltTarg uavs_setpoint_alt[9];
+	mavros_msgs::CommandTOL uavs_apm_landtoff[9];
+	GpsHomePos uavs_gps_home[9]; //origin of gps local
+	outdoor_gcs::ControlCommand Command_List[9];
+	RTCM uavs_gps_rtcm[9];
 	outdoor_gcs::PathPlan uavs_pathplan;
 	outdoor_gcs::PathPlan uavs_pathplan_nxt;
 

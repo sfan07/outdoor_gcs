@@ -144,7 +144,7 @@ private:
 	int square_i = 0;
 
 	////////////////////// Multi-uav ////////////////////////////
-	int DroneNumber = 5;
+	int DroneNumber = 9;
 	std::list<int> avail_uavind;
 	int origin_ind;
 	// bool continue_offboard;
@@ -154,7 +154,7 @@ private:
 	ros::Time start_time;
 	ros::Time arrive_time;
 
-	outdoor_gcs::uav_info UAVs[5];
+	outdoor_gcs::uav_info UAVs[9];
 	QStringList UAV_Detected;
 	QStringList UAV_Info_Logger;
 	outdoor_gcs::checkbox_status checkbox_stat;

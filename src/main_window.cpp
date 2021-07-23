@@ -391,7 +391,7 @@ void MainWindow::on_Update_UAV_List_clicked(bool check){
     avail_uavind.clear();
     for(int i = 0; i < DroneNumber ; i++) {
         UAVs[i].rosReceived = false;
-        QString filter_word = "uav" + QString::number(i+1) + "/mavlink/from";
+        QString filter_word = "uav" + QString::number(i+1) + "/mavlink/from"; // use this topic as a filter to detect uav
         QStringList filtered_topics = all_topics.filter(filter_word);
         if (filtered_topics.count() != 0){
             UAV_Detected += "uav" + QString::number(i+1);
@@ -494,6 +494,8 @@ void MainWindow::on_Button_Set_All_Height_clicked(bool check){
 
     if (target_height > -1.2 && target_height < 30.0) {
         for (const auto &i : avail_uavind){
+            UAVs[i].pos_des[0] = UAVs[i].pos_cur[0];
+            UAVs[i].pos_des[1] = UAVs[i].pos_cur[1];
             UAVs[i].pos_des[2] = target_height;
             qnode.Update_UAV_info(UAVs[i], i);
         }
