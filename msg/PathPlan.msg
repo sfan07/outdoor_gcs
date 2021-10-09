@@ -8,4 +8,6 @@ float32[27] cur_position
 float32[27] des_position
 float32[27] nxt_position
 float32[27] cur_velocity
+float32[27] cur_acceleration
+float32[27] cur_angles 
 float32[10] params

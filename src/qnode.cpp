@@ -93,6 +93,7 @@ bool QNode::init() {
 	uavs_pathplan_sub = n.subscribe<outdoor_gcs::PathPlan>("/uavs/pathplan_nxt",1, &QNode::uavs_pathplan_callback, this);
 	uavs_pathplan_pub = n.advertise<outdoor_gcs::PathPlan>("/uavs/pathplan",1);
 	last_change = ros::Time::now();
+	uavs_pathplan.start = false;
 
 	start();
 	return true;
@@ -359,14 +360,14 @@ void QNode::uavs_pub_command(){
 			uavs_gps_rtcm[ind].header.seq += 1;
         	uavs_gps_rtcm_pub[ind].publish(uavs_gps_rtcm[ind]);
 		}
-		if (pathplan){
-			pathplan_flag=true;
-		}
+		// if (pathplan){
+		// 	pathplan_flag=true;
+		// }
 	}
-	if (pathplan_flag){	
+	if (pathplan){	
 		Update_PathPlan();
-		uavs_pathplan_pub.publish(uavs_pathplan); 
 	}
+	uavs_pathplan_pub.publish(uavs_pathplan); 
 	received_rtcm = false;
 }
 void QNode::rtcm_callback(const RTCM::ConstPtr &msg){
@@ -380,6 +381,16 @@ void QNode::uavs_state_callback(const mavros_msgs::State::ConstPtr &msg, int ind
 void QNode::uavs_imu_callback(const sensor_msgs::Imu::ConstPtr &msg, int ind){
 	uavs_imu[ind] = *msg;
 	UAVs_info[ind].preimuReceived = true;
+	// linear_acceleration
+	UAVs_info[ind].acc_cur[0] = uavs_imu[ind].linear_acceleration.x;
+	UAVs_info[ind].acc_cur[1] = uavs_imu[ind].linear_acceleration.y;
+	UAVs_info[ind].acc_cur[2] = uavs_imu[ind].linear_acceleration.z;
+	// roll,pitch, yaw angles
+	float quat[4] = {uavs_imu[ind].orientation.w, uavs_imu[ind].orientation.x, uavs_imu[ind].orientation.y, uavs_imu[ind].orientation.z};
+    outdoor_gcs::Angles uav_euler = quaternion_to_euler(quat);
+	UAVs_info[ind].ang_cur[0] = uav_euler.roll/3.14*180;//degree
+	UAVs_info[ind].ang_cur[1] = uav_euler.pitch/3.14*180;//degree
+	UAVs_info[ind].ang_cur[2] = uav_euler.yaw/3.14*180; //degree
 }
 void QNode::uavs_gps_callback(const outdoor_gcs::GPSRAW::ConstPtr &msg, int ind){
 	uavs_gps[ind] = *msg;
@@ -418,7 +429,7 @@ void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
 			UAVs_info[ind].pos_nxt[2] = UAVs_info[ind].pos_des[2];
 		}
 	}
-	uavs_pathplan.start = uavs_pathplan_nxt.start;
+	// uavs_pathplan.start = uavs_pathplan_nxt.start;
 }
 
 void QNode::Set_Arm_uavs(bool arm_disarm, int ind){
@@ -687,9 +698,10 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	start_path = false;
 	// start_path = true;
 	if (i==4 || i==5 || i==6 || i==7){
-		pathplan = true;
 		uavs_pathplan.start = true;
+		pathplan = true;
 	} else{
+		uavs_pathplan.start = false;
 		pathplan = false;
 	}
 }
@@ -709,6 +721,12 @@ void QNode::Update_PathPlan(){
 		uavs_pathplan.cur_velocity[3*it+0] = UAVs_info[it].vel_cur[0];
 		uavs_pathplan.cur_velocity[3*it+1] = UAVs_info[it].vel_cur[1];
 		uavs_pathplan.cur_velocity[3*it+2] = UAVs_info[it].vel_cur[2];
+		uavs_pathplan.cur_acceleration[3*it+0] = UAVs_info[it].acc_cur[0];
+		uavs_pathplan.cur_acceleration[3*it+1] = UAVs_info[it].acc_cur[1];
+		uavs_pathplan.cur_acceleration[3*it+2] = UAVs_info[it].acc_cur[2];
+		uavs_pathplan.cur_angles[3*it+0] = UAVs_info[it].ang_cur[0];//0,1,2:roll,pitch,yaw
+		uavs_pathplan.cur_angles[3*it+1] = UAVs_info[it].ang_cur[1];//0,1,2:roll,pitch,yaw
+		uavs_pathplan.cur_angles[3*it+2] = UAVs_info[it].ang_cur[2];//0,1,2:roll,pitch,yaw
 		if (Plan_Dim[it] == 4){ // 2D ORCA, assume uavs at same height of 3.0
 			uavs_pathplan.cur_position[3*it+2] = 3.0;
 		}
