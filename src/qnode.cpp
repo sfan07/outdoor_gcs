@@ -424,6 +424,10 @@ void QNode::uavs_pathplan_callback(const outdoor_gcs::PathPlan::ConstPtr &msg){
 			UAVs_info[ind].pos_nxt[0] = uavs_pathplan_nxt.nxt_position[ind*3+0];
 			UAVs_info[ind].pos_nxt[1] = uavs_pathplan_nxt.nxt_position[ind*3+1];
 			UAVs_info[ind].pos_nxt[2] = uavs_pathplan_nxt.nxt_position[ind*3+2];
+			
+			UAVs_info[ind].pos_fin[0] = uavs_pathplan_nxt.des_position[ind*3+0];//add assigned vertices
+			UAVs_info[ind].pos_fin[1] = uavs_pathplan_nxt.des_position[ind*3+1];
+			UAVs_info[ind].pos_fin[2] = uavs_pathplan_nxt.des_position[ind*3+2];
 		}
 		if (Plan_Dim[ind] == 4 || Plan_Dim[ind] == 6){ // 2D ORCA & 2D DW
 			UAVs_info[ind].pos_nxt[2] = UAVs_info[ind].pos_des[2];
@@ -526,9 +530,12 @@ void QNode::UAVS_Do_Plan(){
 	for (const auto &host_ind : avail_uavind){
 
 		float dist[3];
-		dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-		dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-		dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+		// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
+		dist[0] = UAVs_info[host_ind].pos_fin[0] - UAVs_info[host_ind].pos_cur[0];
+		// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
+		dist[1] = UAVs_info[host_ind].pos_fin[1] - UAVs_info[host_ind].pos_cur[1];
+		// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
+		dist[2] = UAVs_info[host_ind].pos_fin[2] - UAVs_info[host_ind].pos_cur[2];
 		if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
 			UAVs_info[host_ind].arrive = true;
 		} else{ UAVs_info[host_ind].arrive = false; }

@@ -1252,7 +1252,8 @@ void MainWindow::updateInfoLogger(){
         if (init_fin == 1){ word_to_be_print += "Init! "; } 
         else if (init_fin == 2){ word_to_be_print += "Final! "; } 
         else {word_to_be_print += "-- ";}
-        if (all_arrive) {word_to_be_print += "Arrived! "; }
+        if (all_arrive) {word_to_be_print += "Hunted! "; }
+        // if (all_arrive) {word_to_be_print += "Arrived! "; }
         else {word_to_be_print += "On the way! "; }
         word_to_be_print += "Time: ";
         word_to_be_print += QString::number(arrive_time.toSec() - start_time.toSec(), 'f', 1);
@@ -1345,9 +1346,9 @@ void MainWindow::updateInfoLogger(){
                 ui.info_logger->addItem("Throttle: X: " + QString::number(log.Control_Output.Throttle[0], 'f', 3) +
                                         ". Y: " + QString::number(log.Control_Output.Throttle[1], 'f', 3) + 
                                         ". Z: " + QString::number(log.Control_Output.Throttle[2], 'f', 3));
-                ui.info_logger->addItem("Desired Position: X: " + QString::number(UAVs[it].pos_des[0], 'f', 3) +
-                                        ". Y: " + QString::number(UAVs[it].pos_des[1], 'f', 3) + 
-                                        ". Z: " + QString::number(UAVs[it].pos_des[2], 'f', 3));
+                ui.info_logger->addItem("Desired Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+                                        ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) + 
+                                        ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
                 if(UAVs[it].move){
                     int item_index = ui.info_logger->count()-1;
                     ui.info_logger->item(item_index)->setForeground(Qt::darkGreen);
@@ -1449,9 +1450,9 @@ void MainWindow::updateInfoLogger(){
                 //                         ". Y: " + QString::number(log.Control_Output.Throttle[1], 'f', 3) + 
                 //                         ". Z: " + QString::number(log.Control_Output.Throttle[2], 'f', 3));
                 ui.info_logger->addItem("uav " + QString::number(it+1) + 
-                                        ": Desired Position: X: " + QString::number(UAVs[it].pos_des[0], 'f', 3) +
-                                        ". Y: " + QString::number(UAVs[it].pos_des[1], 'f', 3) + 
-                                        ". Z: " + QString::number(UAVs[it].pos_des[2], 'f', 3));
+                                        ": Desired Position: X: " + QString::number(UAVs[it].pos_fin[0], 'f', 3) +
+                                        ". Y: " + QString::number(UAVs[it].pos_fin[1], 'f', 3) + 
+                                        ". Z: " + QString::number(UAVs[it].pos_fin[2], 'f', 3));
                 if(UAVs[it].move){
                     int item_index = ui.info_logger->count()-1;
                     ui.info_logger->item(item_index)->setForeground(Qt::darkGreen);

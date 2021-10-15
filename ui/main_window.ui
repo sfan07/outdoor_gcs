@@ -1682,10 +1682,10 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QLineEdit" name="y_input_all"/>
+            <widget class="QLineEdit" name="x_input_all"/>
            </item>
            <item>
-            <widget class="QLineEdit" name="x_input_all"/>
+            <widget class="QLineEdit" name="y_input_all"/>
            </item>
            <item>
             <widget class="QLineEdit" name="z_input_all"/>
