@@ -531,12 +531,16 @@ void QNode::UAVS_Do_Plan(){
 
 		float dist[3];
 		// dist[0] = UAVs_info[host_ind].pos_des[0] - UAVs_info[host_ind].pos_cur[0];
-		dist[0] = UAVs_info[host_ind].pos_fin[0] - UAVs_info[host_ind].pos_cur[0];
+		// dist[0] = UAVs_info[host_ind].pos_fin[0] - UAVs_info[host_ind].pos_cur[0];
+		dist[0] = UAVs_info[host_ind].pos_cur[0] - UAVs_info[0].pos_cur[0];
 		// dist[1] = UAVs_info[host_ind].pos_des[1] - UAVs_info[host_ind].pos_cur[1];
-		dist[1] = UAVs_info[host_ind].pos_fin[1] - UAVs_info[host_ind].pos_cur[1];
+		// dist[1] = UAVs_info[host_ind].pos_fin[1] - UAVs_info[host_ind].pos_cur[1];
+		dist[1] = UAVs_info[host_ind].pos_cur[1] - UAVs_info[0].pos_cur[1];
 		// dist[2] = UAVs_info[host_ind].pos_des[2] - UAVs_info[host_ind].pos_cur[2];
-		dist[2] = UAVs_info[host_ind].pos_fin[2] - UAVs_info[host_ind].pos_cur[2];
-		if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+		// dist[2] = UAVs_info[host_ind].pos_fin[2] - UAVs_info[host_ind].pos_cur[2];
+		dist[2] = UAVs_info[host_ind].pos_cur[2] - UAVs_info[0].pos_cur[2];
+		// if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<0.25){
+		if (sqrt(pow(dist[0],2)+pow(dist[1],2)+pow(dist[2],2))<(1.733+0.5)){ //distance l is 1m
 			UAVs_info[host_ind].arrive = true;
 		} else{ UAVs_info[host_ind].arrive = false; }
 
@@ -595,7 +599,7 @@ void QNode::UAVS_Do_Plan(){
 				}
 				move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 			}
-			else if (pathplan){ //2D & 3D ORCA & DW Flock
+			else if (Plan_Dim[host_ind] == 7){ //2D & 3D ORCA & DW Flock
 				if (UAVs_info[host_ind].pos_nxt[0]!=0 && UAVs_info[host_ind].pos_nxt[1]!=0 && UAVs_info[host_ind].pos_nxt[2]!=0){
 					move_uavs(host_ind, UAVs_info[host_ind].pos_nxt);
 				}
@@ -704,7 +708,7 @@ void QNode::Update_Planning_Dim(int host_ind, int i){
 	
 	start_path = false;
 	// start_path = true;
-	if (i==4 || i==5 || i==6 || i==7){
+	if (i==4 || i==5 || i==6 || i==7 || i==10 || i==11){
 		uavs_pathplan.start = true;
 		pathplan = true;
 	} else{
